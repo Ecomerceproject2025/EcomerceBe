@@ -1,0 +1,88 @@
+﻿using EcomerceBE.Data;
+using EcomerceBE.Service;
+using EcomerceBE.Service.auth;
+using EcomerceBE.Service.user;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using OfficeOpenXml;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// ✅ Cấu hình DB
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+// ✅ JWT Auth
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(key)
+        };
+    });
+
+// ✅ CORS - cấu hình cẩn thận
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+
+    //// Nếu muốn dùng policy riêng cho localhost:3000, kích hoạt
+    //options.AddPolicy("AllowLocalhost3000", policy =>
+    //{
+    //    policy.WithOrigins("http://localhost:3000")
+    //          .AllowAnyHeader()
+    //          .AllowAnyMethod();
+    //});
+});
+
+// ✅ DI Services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.Configure<AppUrls>(builder.Configuration.GetSection("AppUrls")); /// url of frontend
+ExcelPackage.License.SetNonCommercialPersonal("ecomercebe");
+var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    context.SeedAdminUsers();
+}
+
+
+// ✅ Middleware gọi theo thứ tự chính xác
+app.UseSwagger();
+app.UseSwaggerUI();
+app.UseHttpsRedirection();
+
+// Chỉ gọi 1 lần UseCors:
+// Nếu dùng chính sách mặc định:
+app.UseCors();
+
+// Nếu dùng chính sách "AllowLocalhost3000":
+// app.UseCors("AllowLocalhost3000");
+
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+
+Console.WriteLine($"[DEBUG] JWT Key in use: {builder.Configuration["Jwt:Key"]}");
+
+app.Run();
