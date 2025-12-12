@@ -37,30 +37,43 @@ namespace EcomerceBE.Controllers
         {
             public List<SizeWithColorsDto> Sizes { get; set; } = new();
             public List<ReviewDto> Reviews { get; set; } = new();
-            public int? ReturnDeliveryDay { get; set; }    
+            public int? ReturnDeliveryDay { get; set; }
         }
 
 
 
         public class ColorAndquantity
         {
-            public string ColorCode { get; set; }
+            public string ColorCode { get; set; } = string.Empty;
             public int quantity { get; set; }
         }
         public class SizeWithColorsDto
         {
             public string SizeName { get; set; } = "";
-            public List<ColorAndquantity> Color { get; set; }
+            public List<ColorAndquantity> Color { get; set; } = new();
         }
 
         public class ReviewDto
         {
-            public string Comment { get; set; }
+            public int ReviewId { get; set; }
+            public string Comment { get; set; } = string.Empty;
             public int Rating { get; set; }
             public DateTime CreatedAt { get; set; }
-            public string UserName { get; set; }
+            public string UserName { get; set; } = string.Empty;
             public int userid { get; set; }
-            public string Avatar { get; set; }
+            public string Avatar { get; set; } = string.Empty;
+            public List<string> ImageUrls { get; set; } = new();
+            public int ProductId { get; set; }
+            public List<ReplyDto> Replies { get; set; } = new();
+        }
+
+        public class ReplyDto
+        {
+            public int ReviewReplyId { get; set; }
+            public int UserId { get; set; }
+            public string UserName { get; set; } = string.Empty;
+            public string ReplyText { get; set; } = string.Empty;
+            public DateTime CreatedAt { get; set; }
         }
 
         [HttpGet("ExploreOurProducts")]
@@ -69,7 +82,9 @@ namespace EcomerceBE.Controllers
             if (page < 1) page = 1;
             if (limit < 1) limit = 10;
 
-            var baseQuery = _context.Products.AsNoTracking();
+            var baseQuery = _context.Products
+                .AsNoTracking()
+                .Where(p => p.IsActive && (p.productType == null || !p.productType.ToLower().Equals("flashsale")));
 
             var total = await baseQuery.CountAsync();
 
@@ -102,7 +117,7 @@ namespace EcomerceBE.Controllers
 
             var baseQuery = _context.Products
                 .AsNoTracking()
-                .Where(p => p.CategoryId == id);
+                .Where(p => p.CategoryId == id && p.IsActive && (p.productType == null || !p.productType.ToLower().Equals("flashsale")));
 
             var total = await baseQuery.CountAsync();
 
@@ -137,7 +152,7 @@ namespace EcomerceBE.Controllers
         {
             var product = await _context.Products
                 .AsNoTracking()
-                .Where(p => p.ProductId == id)
+                .Where(p => p.ProductId == id && p.IsActive == true && !p.productType.ToLower().Equals("flashsale"))
                 .Select(p => new ProductDetailDto
                 {
                     Id = p.ProductId,
@@ -154,14 +169,16 @@ namespace EcomerceBE.Controllers
                         {
 
 
-                            SizeName = ps.Size != null ? ps.Size.Name : ps.CustomValue,
-                            Color= ps.ProductColors
-                                .Select(pc => new ColorAndquantity
-                                {
-                                    ColorCode = pc.ColorCode,
-                                    quantity = pc.Quantity
-                                })
-                                .ToList(),
+                            SizeName = ps.Size != null ? ps.Size.Name : (ps.CustomValue ?? string.Empty),
+                            Color= ps.ProductColors != null
+                                ? ps.ProductColors
+                                    .Select(pc => new ColorAndquantity
+                                    {
+                                        ColorCode = pc.ColorCode,
+                                        quantity = pc.Quantity
+                                    })
+                                    .ToList()
+                                : new List<ColorAndquantity>(),
 
                         })
                         .ToList(),
@@ -202,15 +219,29 @@ namespace EcomerceBE.Controllers
         {
             var reviews = await _context.Reviews
                 .AsNoTracking()
+                .Include(r => r.ReviewImages)
+                .Include(r => r.Replies)
+                    .ThenInclude(rr => rr.User)
                 .Where(r => r.ProductId == id)
                 .Select(r => new ReviewDto
                 {
-                    Comment = r.Comment,
+                    ReviewId = r.ReviewId,
+                    Comment = r.Comment ?? string.Empty,
                     Rating = r.Rating,
                     CreatedAt = r.CreatedAt,
-                    UserName = r.User.Name,
+                    UserName = r.User.Name ?? "Ẩn danh",
                     userid = r.UserId,
-                    Avatar = r.User.Avatar,
+                    Avatar = r.User.Avatar ?? string.Empty,
+                    ImageUrls = r.ReviewImages.Select(ri => ri.ImageUrl).ToList(),
+                    ProductId = r.ProductId,
+                    Replies = r.Replies.Select(rr => new ReplyDto
+                    {
+                        ReviewReplyId = rr.ReviewReplyId,
+                        UserId = rr.UserId,
+                        UserName = rr.User.Name ?? "Admin",
+                        ReplyText = rr.ReplyText,
+                        CreatedAt = rr.CreatedAt
+                    }).ToList()
                 })
                 .ToListAsync();
             return Ok(reviews);

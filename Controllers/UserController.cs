@@ -236,14 +236,94 @@ namespace EcomerceBE.Controllers
 
                 return Ok("address was default"); 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Error setting default address");
             }
         }
 
 
-       
+        [HttpGet("normal_products")]
+        public async Task<IActionResult> GetNomalProduct(
+              [FromQuery] int page = 1,
+              [FromQuery] int limit = 10)
+        {
+
+
+            var normalQuery = _context.Products
+                .Where(p =>
+                    (p.productType == null || !p.productType.ToLower().Equals("flashsale"))
+                    && p.IsActive);
+
+            int totalProducts = await normalQuery.CountAsync();
+            int totalPages = (int)Math.Ceiling(totalProducts / (double)limit);
+            var products = await normalQuery
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .Select(p => new
+                {
+                    id = p.ProductId,
+                    Title = p.Name,
+                    p.Category.CategoryId,
+                    categoryName = p.Category.Name,
+                    p.Price,
+                    Maxquantity = p.StockQuantity,
+                    p.Description,
+                    p.ImportPrice,
+                    p.ReturnDeliveryDay,
+                    ProductCoupon = p.ProductCoupons.Select(pc => pc.Coupon.Code).ToList(),
+                    Category = p.Category.CategorySizes.Select(cs => cs.Size.Name).ToList(),
+                    Color = p.ProductSizes
+                        .SelectMany(ps => ps.ProductColors)
+                        .Select(pc => pc.ColorCode)
+                        .Distinct()
+                        .ToList(),
+
+                    productType = p.productType,
+
+
+                    // Lấy ảnh thứ 2, nếu không có thì null
+                    heroImage = p.Images
+                        .Select(img => img.ImageUrl)
+                        .ElementAtOrDefault(1),
+
+                    // Lấy list từ ảnh thứ 2 trở đi (nếu không có thì list rỗng)
+                    ProductImage = p.Images
+
+                        .Skip(1)
+                        .Select(img => img.ImageUrl)
+                        .ToList(),
+
+                    Sizes = p.ProductSizes
+                        .Select(ps => new SizeWithColorsDto
+                        {
+                            SizeName = ps.Size != null
+                                ? ps.Size.Name
+                                : (ps.CustomValue ?? string.Empty),
+
+                            Color = ps.ProductColors != null
+                                ? ps.ProductColors.Select(pc => new ColorAndquantity
+                                {
+                                    ColorCode = pc.ColorCode,
+                                    quantity = pc.Quantity
+                                }).ToList()
+                                : new List<ColorAndquantity>()
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                totalPages = totalPages,
+                totalProducts = totalProducts,
+                products = products,
+                page = page,
+            }
+            );
+        }
+
+
     }
 }
 

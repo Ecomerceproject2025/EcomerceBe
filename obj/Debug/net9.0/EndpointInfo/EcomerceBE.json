@@ -435,6 +435,37 @@
         }
       }
     },
+    "/api/CheckOut/create-order": {
+      "post": {
+        "tags": [
+          "CheckOut"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutOrderDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutOrderDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/CheckOut/submit_coupon/{couponCode}": {
       "post": {
         "tags": [
@@ -447,6 +478,82 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/FlashSale/GetAllFlashSales": {
+      "get": {
+        "tags": [
+          "FlashSale"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/FlashSale/SetTimeFlashSale": {
+      "put": {
+        "tags": [
+          "FlashSale"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlashSaleCreateDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlashSaleCreateDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FlashSaleCreateDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/FlashSale/{productId}/remove-item": {
+      "delete": {
+        "tags": [
+          "FlashSale"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
@@ -555,17 +662,49 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProductRequest"
+                "$ref": "#/components/schemas/AddProduct"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProductRequest"
+                "$ref": "#/components/schemas/AddProduct"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProductRequest"
+                "$ref": "#/components/schemas/AddProduct"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Product/import-products": {
+      "post": {
+        "tags": [
+          "Product"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "file": {
+                  "style": "form"
+                }
               }
             }
           }
@@ -819,6 +958,38 @@
           }
         }
       }
+    },
+    "/api/User/normal_products": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -833,6 +1004,71 @@
           "address": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "AddProduct": {
+        "type": "object",
+        "properties": {
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "importPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "salePrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "returnDeliveryDay": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "productType": {
+            "type": "string",
+            "nullable": true
+          },
+          "categoryId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VariantVm"
+            },
+            "nullable": true
+          },
+          "coupons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Coupon"
+            },
+            "nullable": true
+          },
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -1092,6 +1328,68 @@
         },
         "additionalProperties": false
       },
+      "CheckoutOrderDto": {
+        "required": [
+          "paymentMethod"
+        ],
+        "type": "object",
+        "properties": {
+          "addressId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "couponId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutOrderItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CheckoutOrderItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productVariantId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
       "ConfirmEmailRequest": {
         "type": "object",
         "properties": {
@@ -1205,6 +1503,11 @@
         "additionalProperties": false
       },
       "FlashSale": {
+        "required": [
+          "endTime",
+          "name",
+          "startTime"
+        ],
         "type": "object",
         "properties": {
           "flashSaleId": {
@@ -1213,8 +1516,8 @@
           },
           "name": {
             "maxLength": 255,
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "startTime": {
             "type": "string",
@@ -1234,6 +1537,32 @@
         },
         "additionalProperties": false
       },
+      "FlashSaleCreateDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "day": {
+            "type": "string",
+            "nullable": true
+          },
+          "hours": {
+            "type": "string",
+            "nullable": true
+          },
+          "minutes": {
+            "type": "string",
+            "nullable": true
+          },
+          "seconds": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "FlashSaleItem": {
         "type": "object",
         "properties": {
@@ -1245,19 +1574,27 @@
             "type": "integer",
             "format": "int32"
           },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
           "productId": {
             "type": "integer",
             "format": "int32"
+          },
+          "flashSale": {
+            "$ref": "#/components/schemas/FlashSale"
           },
           "discountPrice": {
             "type": "number",
             "format": "double"
           },
-          "flashSale": {
-            "$ref": "#/components/schemas/FlashSale"
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32"
           },
-          "product": {
-            "$ref": "#/components/schemas/Product"
+          "sold": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -1443,12 +1780,6 @@
             "type": "number",
             "format": "double"
           },
-          "salePrice": {
-            "minimum": 0,
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
           "discountPrice": {
             "minimum": 0,
             "type": "number",
@@ -1511,6 +1842,10 @@
           },
           "metaKeywords": {
             "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "productType": {
             "type": "string",
             "nullable": true
           },
@@ -1804,6 +2139,20 @@
         },
         "additionalProperties": false
       },
+      "SizeVm": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateProductRequest": {
         "type": "object",
         "properties": {
@@ -1827,6 +2176,10 @@
             "type": "number",
             "format": "double"
           },
+          "productType": {
+            "type": "string",
+            "nullable": true
+          },
           "salePrice": {
             "type": "number",
             "format": "double",
@@ -1838,7 +2191,8 @@
           },
           "categoryId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "category": {
             "type": "string",
@@ -1869,6 +2223,11 @@
             "items": {
               "$ref": "#/components/schemas/ProductVariantDto"
             },
+            "nullable": true
+          },
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           }
         },
@@ -2054,6 +2413,23 @@
           "value": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VariantVm": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "$ref": "#/components/schemas/SizeVm"
+          },
+          "colorHex": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false

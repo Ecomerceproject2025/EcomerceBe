@@ -184,7 +184,7 @@ namespace EcomerceBE.Controllers
                         Status = 409,
                         Title = "Conflict",
                         Detail = "Some SizeId do not belong to the selected category.",
-                        Extensions = new Dictionary<string, object> { ["code"] = "CategorySizeMismatch", ["sizeIds"] = notInCategory }
+                        Extensions = new Dictionary<string, object?> { ["code"] = "CategorySizeMismatch", ["sizeIds"] = notInCategory }
                     });
             }
 
@@ -221,14 +221,13 @@ namespace EcomerceBE.Controllers
             if (product == null)
                 return NotFound(new { message = "Product not found" });
 
-            // --- UPDATE SCALAR PROPERTIES ---
-            product.Name = request.Title;
-            product.Description = request.Description;
+            // --- UPDATE SCALAR PROPERTIES ---F
+            product.Name = request.Title ?? string.Empty;
+            product.Description = request.Description ?? string.Empty;
             product.Price = request.Price;
             product.ImportPrice = request.ImportPrice;
 
-            // Update SalePrice: nếu có giá trị thì dùng, nếu không thì set = 0
-            product.SalePrice = request.SalePrice ?? 0;
+        
 
             product.ReturnDeliveryDay = request.ReturnDeliveryDay;
             product.CategoryId = request.CategoryId;
@@ -301,6 +300,53 @@ namespace EcomerceBE.Controllers
 
             // Cập nhật tổng kho
             product.StockQuantity = normalized.Sum(v => v.Quantity);
+            product.productType = request.productType ?? "Normal";
+            product.IsActive = request.productType?.Equals("flashsale", StringComparison.OrdinalIgnoreCase) == true
+                ? false
+                : true;
+
+            // ✅ Kiểm tra product đã tồn tại trong FlashSale(id=1)
+            var existingSaleItem = await _context.Set<FlashSaleItem>()
+                .FirstOrDefaultAsync(si => si.ProductId == id && si.FlashSaleId == 1);
+
+            if (request.productType?.Equals("flashsale", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // ✅ Nếu chưa tồn tại => Tạo FlashSaleItem mới
+                if (existingSaleItem == null)
+                {
+                    var saleItem = new FlashSaleItem
+                    {
+                        FlashSaleId = 1,
+                        ProductId = product.ProductId,
+                        Product = product,
+                        DiscountPrice = request.SalePrice!.Value,
+                        saleQuantity = request.saleQuantity!.Value
+                    };
+
+                    _context.Set<FlashSaleItem>().Add(saleItem);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    // ✅ Nếu đã tồn tại => Cập nhật giá và số lượng
+                    existingSaleItem.DiscountPrice = request.SalePrice!.Value;
+                    existingSaleItem.saleQuantity = request.saleQuantity!.Value;
+
+                    _context.Set<FlashSaleItem>().Update(existingSaleItem);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else if (request.productType?.Equals("normal", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                // ✅ Nếu là normal => Xóa khỏi FlashSaleItem
+                if (existingSaleItem != null)
+                {
+                    _context.Set<FlashSaleItem>().Remove(existingSaleItem);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+
 
             // --- SAVE ---
             try
@@ -314,7 +360,7 @@ namespace EcomerceBE.Controllers
                     {
                         name = product.Name,
                         price = product.Price,
-                        salePrice = product.SalePrice,
+                    
                         stockQuantity = product.StockQuantity
                     }
                 });
@@ -488,7 +534,6 @@ namespace EcomerceBE.Controllers
                 Description = request.Description,
                 Price = request.Price,
                 ImportPrice = request.ImportPrice,
-                SalePrice = request.SalePrice,
                 ReturnDeliveryDay = request.ReturnDeliveryDay,
                 CategoryId = request.CategoryId,
                 Images = new List<ProductImage>(),
@@ -497,20 +542,24 @@ namespace EcomerceBE.Controllers
             };
 
             // Thêm ảnh hero nếu có
-            if (!string.IsNullOrEmpty(request.Images?.FirstOrDefault()))
+            if (request.Images != null && request.Images.Any())
             {
-                product.Images.Add(new ProductImage
+                var firstImage = request.Images.FirstOrDefault();
+                if (!string.IsNullOrEmpty(firstImage))
                 {
-                    ImageUrl = request.Images.FirstOrDefault()
-                });
-            }
+                    product.Images.Add(new ProductImage
+                    {
+                        ImageUrl = firstImage
+                    });
+                }
 
-            // Thêm các ảnh còn lại
-            foreach (var imgUrl in request.Images)
-            {
-                if (imgUrl != request.Images.FirstOrDefault())
+                // Thêm các ảnh còn lại
+                foreach (var imgUrl in request.Images)
                 {
-                    product.Images.Add(new ProductImage { ImageUrl = imgUrl });
+                    if (!string.IsNullOrEmpty(imgUrl) && imgUrl != firstImage)
+                    {
+                        product.Images.Add(new ProductImage { ImageUrl = imgUrl });
+                    }
                 }
             }
 
@@ -559,9 +608,27 @@ namespace EcomerceBE.Controllers
                 });
             }
 
+
             // Cập nhật tổng kho
             product.StockQuantity = normalized.Sum(v => v.Quantity);
+            product.productType = request.productType ?? "Normal";
+            product.IsActive = request.productType?.Equals("flashsale", StringComparison.OrdinalIgnoreCase) == true
+                ? false
+                : true;
+            if (request.productType?.Equals("flashsale", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                var saleItem = new FlashSaleItem
+                {
+                    FlashSaleId = 1,  // ✅ Cố định FlashSaleId = 1
+                    ProductId = product.ProductId,
+                    Product = product,
 
+                    DiscountPrice  = request.SalePrice!, 
+                    saleQuantity = request.saleQuantity      // Nếu có
+                };
+                _context.Set<FlashSaleItem>().Add(saleItem);
+                await _context.SaveChangesAsync();
+            }
             // --- Lưu vào database ---
             try
             {
@@ -576,7 +643,7 @@ namespace EcomerceBE.Controllers
                     {
                         name = product.Name,
                         price = product.Price,
-                        salePrice = product.SalePrice,
+                      
                         stockQuantity = product.StockQuantity
                     }
                 });
@@ -657,7 +724,7 @@ namespace EcomerceBE.Controllers
                                 var imagesCSV = worksheet.Cells[row, 8].Value?.ToString() ?? string.Empty;
                                 var listCouponCSV = worksheet.Cells[row, 9].Value?.ToString() ?? string.Empty;
                                 var variantsCSV = worksheet.Cells[row, 10].Value?.ToString() ?? string.Empty;
-
+                                var productType = worksheet.Cells[row, 11].Value?.ToString() ?? string.Empty;
                                 // Parse Images
                                 var images = string.IsNullOrWhiteSpace(imagesCSV)
                                     ? new List<string>()
@@ -703,7 +770,8 @@ namespace EcomerceBE.Controllers
                                     CategoryId = int.Parse(categoryId),
                                     Images = images,
                                     Variants = variants,
-                                    coupons = new List<Coupon>() // Xử lý coupons nếu cần
+                                    coupons = new List<Coupon>() ,// Xử lý coupons nếu cần
+                                     productType = productType,
                                 };
 
                                 // Parse Coupons và thêm vào request: format "CODE:Description:Discount:IsActive|..."
@@ -746,7 +814,7 @@ namespace EcomerceBE.Controllers
                                 // Gọi AddProduct để validate và lưu
                                 var result = await AddProduct(addProductRequest);
 
-                                if (result is OkObjectResult okResult)
+                                if (result is OkObjectResult okResult && okResult.Value != null)
                                 {
                                     successProducts.Add(okResult.Value);
                                 }
@@ -755,7 +823,7 @@ namespace EcomerceBE.Controllers
                                     var problemDetails = conflictResult.Value as ProblemDetails;
                                     errors.Add($"Row {row}: {problemDetails?.Detail ?? "Conflict error"}");
                                 }
-                                else if (result is BadRequestObjectResult badResult)
+                                else if (result is BadRequestObjectResult badResult && badResult.Value != null)
                                 {
                                     dynamic badValue = badResult.Value;
                                     errors.Add($"Row {row}: {badValue?.message ?? "Bad request"}");

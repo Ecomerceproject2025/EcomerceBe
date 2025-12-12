@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OfficeOpenXml;
+using EcomerceBE.Service.flashSale;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,6 +54,8 @@ builder.Services.AddCors(options =>
 // ✅ DI Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IFlashSaleService, FlashSaleService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -64,6 +67,7 @@ using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     context.SeedAdminUsers();
+    context.EnsureReviewImagesTable(); // Auto-create ReviewImages table if it doesn't exist
 }
 
 

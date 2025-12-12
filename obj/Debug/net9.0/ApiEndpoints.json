@@ -74,6 +74,64 @@
   },
   {
     "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "UpdateProductVisibility",
+    "RelativePath": "api/Admin/normal_products/{id}/visibility",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.AdminController\u002BUpdateVisibilityDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "GetOrderAlerts",
+    "RelativePath": "api/Admin/order-alerts",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "take",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "since",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "GetRecentBuyers",
+    "RelativePath": "api/Admin/recent-buyers",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
     "Method": "FilterUsers",
     "RelativePath": "api/Admin/user_filter",
     "HttpMethod": "POST",
@@ -83,6 +141,91 @@
       {
         "Name": "filter",
         "Type": "EcomerceBE.DTOs.UserFilter",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "CreateUser",
+    "RelativePath": "api/Admin/users",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.AdminController\u002BAdminCreateUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "UpdateUser",
+    "RelativePath": "api/Admin/users/{id}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.AdminController\u002BAdminUpdateUserDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "BanUser",
+    "RelativePath": "api/Admin/users/{id}/ban",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "ResetPassword",
+    "RelativePath": "api/Admin/users/{id}/reset-password",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.AdminController",
+    "Method": "UnbanUser",
+    "RelativePath": "api/Admin/users/{id}/unban",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
         "IsRequired": true
       }
     ],
@@ -234,6 +377,100 @@
   },
   {
     "ContainingType": "EcomerceBE.Controllers.CheckOutController",
+    "Method": "GetAllOrders",
+    "RelativePath": "api/CheckOut/admin/orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CheckOutController",
+    "Method": "UpdateOrderStatus",
+    "RelativePath": "api/CheckOut/admin/orders/{orderId}/status",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.CheckOutController\u002BUpdateOrderStatusDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CheckOutController",
+    "Method": "CreateOrder",
+    "RelativePath": "api/CheckOut/create-order",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.CheckOutController\u002BCheckoutOrderDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CheckOutController",
+    "Method": "GetMyOrders",
+    "RelativePath": "api/CheckOut/my-orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CheckOutController",
+    "Method": "MarkOrderDelivered",
+    "RelativePath": "api/CheckOut/orders/{orderId}/mark-delivered",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CheckOutController",
+    "Method": "ReturnOrder",
+    "RelativePath": "api/CheckOut/orders/{orderId}/return",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.CheckOutController\u002BReturnOrderDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CheckOutController",
     "Method": "SubmitCoupon",
     "RelativePath": "api/CheckOut/submit_coupon/{couponCode}",
     "HttpMethod": "POST",
@@ -243,6 +480,409 @@
       {
         "Name": "couponCode",
         "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "shippingMethodId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "productIds",
+        "Type": "System.Collections.Generic.List\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "GetCoupons",
+    "RelativePath": "api/coupons",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "type",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "isActive",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "CreateCoupon",
+    "RelativePath": "api/coupons",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.CouponController\u002BCreateCouponDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "GetCouponById",
+    "RelativePath": "api/coupons/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "UpdateCoupon",
+    "RelativePath": "api/coupons/{id}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.CouponController\u002BUpdateCouponDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "DeleteCoupon",
+    "RelativePath": "api/coupons/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "AddProductsToCoupon",
+    "RelativePath": "api/coupons/{id}/products",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "productIds",
+        "Type": "System.Collections.Generic.List\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "RemoveProductFromCoupon",
+    "RelativePath": "api/coupons/{id}/products/{productId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "AddShippingMethodsToCoupon",
+    "RelativePath": "api/coupons/{id}/shipping-methods",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "shippingMethodIds",
+        "Type": "System.Collections.Generic.List\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "RemoveShippingMethodFromCoupon",
+    "RelativePath": "api/coupons/{id}/shipping-methods/{shippingMethodId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "shippingMethodId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "AddUsersToCoupon",
+    "RelativePath": "api/coupons/{id}/users",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.CouponController\u002BAddUsersToCouponDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.CouponController",
+    "Method": "RemoveUserFromCoupon",
+    "RelativePath": "api/coupons/{id}/users/{userId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.FlashSaleController",
+    "Method": "RemoveProductFromSale",
+    "RelativePath": "api/FlashSale/{productId}/remove-item",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.FlashSaleController",
+    "Method": "GetAllFlashSales",
+    "RelativePath": "api/FlashSale/GetAllFlashSales",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.FlashSaleController",
+    "Method": "CreateUpdateFlashSale",
+    "RelativePath": "api/FlashSale/SetTimeFlashSale",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "dto",
+        "Type": "FlashSaleCreateDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "GetOrders",
+    "RelativePath": "api/orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "search",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "startDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "endDate",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "GetOrderById",
+    "RelativePath": "api/orders/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "CancelOrder",
+    "RelativePath": "api/orders/{id}/cancel",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.OrderController\u002BCancelOrderDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "RefundOrder",
+    "RelativePath": "api/orders/{id}/refund",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.OrderController\u002BRefundOrderDto",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "UpdateOrderStatus",
+    "RelativePath": "api/orders/{id}/status",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.OrderController\u002BUpdateOrderStatusDto",
         "IsRequired": true
       }
     ],
@@ -258,7 +898,7 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "EcomerceBE.DTOs.UpdateProductRequest",
+        "Type": "AddProduct",
         "IsRequired": true
       }
     ],
@@ -298,6 +938,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ProductController",
+    "Method": "ImportProducts",
+    "RelativePath": "api/Product/import-products",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "file",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -401,6 +1057,290 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "CreateReview",
+    "RelativePath": "api/Review",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.ReviewController\u002BCreateReviewDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "DeleteReview",
+    "RelativePath": "api/Review/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "ReplyToReview",
+    "RelativePath": "api/Review/{id}/reply",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.ReviewController\u002BReplyDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "GetOrderReviews",
+    "RelativePath": "api/Review/order/{orderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "GetProductReviews",
+    "RelativePath": "api/Review/product/{productId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingController",
+    "Method": "GetShippings",
+    "RelativePath": "api/shipping",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "status",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingController",
+    "Method": "CreateShipping",
+    "RelativePath": "api/shipping",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.ShippingController\u002BCreateShippingDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingMethodController",
+    "Method": "GetShippingMethods",
+    "RelativePath": "api/shipping-methods",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingMethodController",
+    "Method": "GetAllShippingMethods",
+    "RelativePath": "api/shipping-methods/admin",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingMethodController",
+    "Method": "CreateShippingMethod",
+    "RelativePath": "api/shipping-methods/admin",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.ShippingMethodController\u002BCreateShippingMethodDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingMethodController",
+    "Method": "GetShippingMethodById",
+    "RelativePath": "api/shipping-methods/admin/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingMethodController",
+    "Method": "UpdateShippingMethod",
+    "RelativePath": "api/shipping-methods/admin/{id}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.ShippingMethodController\u002BUpdateShippingMethodDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingMethodController",
+    "Method": "DeleteShippingMethod",
+    "RelativePath": "api/shipping-methods/admin/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingController",
+    "Method": "UpdateShipping",
+    "RelativePath": "api/shipping/{id}",
+    "HttpMethod": "PATCH",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.ShippingController\u002BUpdateShippingDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingController",
+    "Method": "DeleteShipping",
+    "RelativePath": "api/shipping/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ShippingController",
+    "Method": "GetShippingByOrderId",
+    "RelativePath": "api/shipping/order/{orderId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EcomerceBE.Controllers.UserController",
     "Method": "AddAddress",
     "RelativePath": "api/User/add_address",
@@ -450,6 +1390,27 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.UserController",
+    "Method": "GetNomalProduct",
+    "RelativePath": "api/User/normal_products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {

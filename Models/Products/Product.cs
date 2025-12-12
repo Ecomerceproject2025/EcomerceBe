@@ -37,8 +37,7 @@ namespace EcomerceBE.Models
         [Range(0.01, double.MaxValue)]
         public decimal Price { get; set; }
 
-        [Range(0, double.MaxValue)]
-        public decimal? SalePrice { get; set; }
+        
 
         [Range(0, double.MaxValue)]
         public decimal? DiscountPrice { get; set; }
@@ -68,6 +67,8 @@ namespace EcomerceBE.Models
 
         [MaxLength(255)]
         public string ?MetaKeywords { get; set; }
+
+        public string productType { get; set; } = "Normal"; // flashsale
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

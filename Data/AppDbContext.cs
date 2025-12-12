@@ -35,6 +35,205 @@ namespace EcomerceBE.Data
 
             SaveChanges();
         }
+
+        public void EnsureReviewImagesTable()
+        {
+            try
+            {
+                // Ensure Reviews table has OrderItemId column
+                EnsureReviewsTableHasOrderItemId();
+
+                // Try to query the table to check if it exists
+                try
+                {
+                    Database.ExecuteSqlRaw("SELECT 1 FROM ReviewImages LIMIT 1");
+                    // Table exists, no need to create
+                }
+                catch
+                {
+                    // Table doesn't exist, create it
+                    Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS `ReviewImages` (
+                            `ReviewImageId` INT NOT NULL AUTO_INCREMENT,
+                            `ReviewId` INT NOT NULL,
+                            `ImageUrl` LONGTEXT NOT NULL,
+                            `CreatedAt` DATETIME(6) NOT NULL,
+                            PRIMARY KEY (`ReviewImageId`),
+                            CONSTRAINT `FK_ReviewImages_Reviews_ReviewId` 
+                                FOREIGN KEY (`ReviewId`) 
+                                REFERENCES `Reviews` (`ReviewId`) 
+                                ON DELETE CASCADE
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                    ");
+
+                    // Try to create index (ignore error if index already exists)
+                    try
+                    {
+                        Database.ExecuteSqlRaw(@"
+                            CREATE INDEX `IX_ReviewImages_ReviewId` 
+                            ON `ReviewImages` (`ReviewId`)
+                        ");
+                    }
+                    catch
+                    {
+                        // Index might already exist, ignore
+                    }
+
+                    Console.WriteLine("[Database] ReviewImages table created successfully.");
+                }
+
+                // Ensure ReviewReplies table exists
+                EnsureReviewRepliesTable();
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail application startup
+                Console.WriteLine($"[Database] Warning: Could not ensure ReviewImages table exists: {ex.Message}");
+            }
+        }
+
+        public void EnsureReviewRepliesTable()
+        {
+            try
+            {
+                // Check if table exists using information_schema (synchronous)
+                var connection = Database.GetDbConnection();
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    connection.Open();
+                }
+
+                using var command = connection.CreateCommand();
+                command.CommandText = @"
+                    SELECT COUNT(*) 
+                    FROM information_schema.tables 
+                    WHERE table_schema = DATABASE() 
+                    AND table_name = 'ReviewReplies'
+                ";
+                
+                var result = command.ExecuteScalar();
+                var tableExists = Convert.ToInt32(result) > 0;
+
+                if (tableExists)
+                {
+                    Console.WriteLine("[Database] ReviewReplies table already exists.");
+                    return;
+                }
+
+                // Create the table
+                Database.ExecuteSqlRaw(@"
+                    CREATE TABLE IF NOT EXISTS `ReviewReplies` (
+                        `ReviewReplyId` INT NOT NULL AUTO_INCREMENT,
+                        `ReviewId` INT NOT NULL,
+                        `UserId` INT NOT NULL,
+                        `ReplyText` LONGTEXT NOT NULL,
+                        `CreatedAt` DATETIME(6) NOT NULL,
+                        PRIMARY KEY (`ReviewReplyId`),
+                        CONSTRAINT `FK_ReviewReplies_Reviews_ReviewId` 
+                            FOREIGN KEY (`ReviewId`) 
+                            REFERENCES `Reviews` (`ReviewId`) 
+                            ON DELETE CASCADE,
+                        CONSTRAINT `FK_ReviewReplies_Users_UserId` 
+                            FOREIGN KEY (`UserId`) 
+                            REFERENCES `Users` (`Id`) 
+                            ON DELETE RESTRICT
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+                ");
+
+                // Try to create index (ignore error if index already exists)
+                try
+                {
+                    Database.ExecuteSqlRaw(@"
+                        CREATE INDEX `IX_ReviewReplies_ReviewId` 
+                        ON `ReviewReplies` (`ReviewId`)
+                    ");
+                }
+                catch
+                {
+                    // Index might already exist, ignore
+                }
+
+                Console.WriteLine("[Database] ReviewReplies table created successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail application startup
+                Console.WriteLine($"[Database] Warning: Could not ensure ReviewReplies table exists: {ex.Message}");
+            }
+        }
+
+        public void EnsureReviewsTableHasOrderItemId()
+        {
+            try
+            {
+                // Check if column exists using information_schema (synchronous)
+                var connection = Database.GetDbConnection();
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    connection.Open();
+                }
+
+                using var command = connection.CreateCommand();
+                command.CommandText = @"
+                    SELECT COUNT(*) 
+                    FROM information_schema.COLUMNS 
+                    WHERE TABLE_SCHEMA = DATABASE() 
+                    AND TABLE_NAME = 'Reviews' 
+                    AND COLUMN_NAME = 'OrderItemId'
+                ";
+                
+                var result = command.ExecuteScalar();
+                var columnExists = Convert.ToInt32(result) > 0;
+
+                if (columnExists)
+                {
+                    Console.WriteLine("[Database] OrderItemId column already exists in Reviews table.");
+                    return;
+                }
+
+                // Check if OrderItems table exists first
+                try
+                {
+                    Database.ExecuteSqlRaw("SELECT 1 FROM OrderItems LIMIT 1");
+                }
+                catch
+                {
+                    Console.WriteLine("[Database] Warning: OrderItems table doesn't exist. Cannot add OrderItemId foreign key.");
+                    return;
+                }
+
+                // Add OrderItemId column to Reviews table
+                Database.ExecuteSqlRaw(@"
+                    ALTER TABLE `Reviews` 
+                    ADD COLUMN `OrderItemId` INT NULL
+                ");
+
+                // Try to add foreign key constraint (may fail if constraint already exists)
+                try
+                {
+                    Database.ExecuteSqlRaw(@"
+                        ALTER TABLE `Reviews` 
+                        ADD CONSTRAINT `FK_Reviews_OrderItems_OrderItemId` 
+                            FOREIGN KEY (`OrderItemId`) 
+                            REFERENCES `OrderItems` (`OrderItemId`) 
+                            ON DELETE SET NULL
+                    ");
+                    Console.WriteLine("[Database] Foreign key constraint added for OrderItemId.");
+                }
+                catch (Exception fkEx)
+                {
+                    // Constraint might already exist, ignore
+                    Console.WriteLine($"[Database] Note: Could not add foreign key constraint (may already exist): {fkEx.Message}");
+                }
+
+                Console.WriteLine("[Database] OrderItemId column added to Reviews table successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Log but don't fail application startup
+                Console.WriteLine($"[Database] Warning: Could not ensure OrderItemId column exists in Reviews table: {ex.Message}");
+            }
+        }
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         // DbSets
@@ -64,14 +263,20 @@ namespace EcomerceBE.Data
         public DbSet<CategorySize> CategorySizes { get; set; }
 
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<ReviewImage> ReviewImages { get; set; }
+        public DbSet<ReviewReply> ReviewReplies { get; set; }
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<OrderStatusLog> OrderStatusLogs { get; set; }
+        public DbSet<Shipping> Shippings { get; set; }
+        public DbSet<ShippingMethod> ShippingMethods { get; set; }
         public DbSet<FlashSale> FlashSales { get; set; }
         public DbSet<FlashSaleItem> FlashSaleItems { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
         public DbSet<ProductCoupon> ProductCoupons { get; set; }
         public DbSet<UserCoupon> UserCoupons { get; set; }
+        public DbSet<ShippingMethodCoupon> ShippingMethodCoupons { get; set; }
 
         public DbSet<Brand> Brands { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -191,6 +396,12 @@ namespace EcomerceBE.Data
                 .HasForeignKey(o => o.CouponId)
                 .OnDelete(DeleteBehavior.SetNull); // [web:218]
 
+            modelBuilder.Entity<Order>()
+                .HasOne(o => o.ShippingMethod)
+                .WithMany()
+                .HasForeignKey(o => o.ShippingMethodId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             modelBuilder.Entity<OrderItem>()
                 .HasOne(oi => oi.Order)
                 .WithMany(o => o.OrderItems)
@@ -202,6 +413,26 @@ namespace EcomerceBE.Data
                 .WithMany(p => p.OrderItems)
                 .HasForeignKey(oi => oi.ProductId)
                 .OnDelete(DeleteBehavior.Restrict); // [web:218]
+
+            // OrderStatusLog
+            modelBuilder.Entity<OrderStatusLog>()
+                .HasOne(osl => osl.Order)
+                .WithMany()
+                .HasForeignKey(osl => osl.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Shipping
+            modelBuilder.Entity<Shipping>()
+                .HasOne(s => s.Order)
+                .WithMany()
+                .HasForeignKey(s => s.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<OrderStatusLog>()
+                .HasOne(osl => osl.ChangedByUser)
+                .WithMany()
+                .HasForeignKey(osl => osl.ChangedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Reviews
             modelBuilder.Entity(typeof(Review))
@@ -215,6 +446,35 @@ namespace EcomerceBE.Data
                 .WithMany(nameof(Product.Reviews))
                 .HasForeignKey(nameof(Review.ProductId))
                 .OnDelete(DeleteBehavior.Cascade); // [web:218]
+
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.OrderItem)
+                .WithMany()
+                .HasForeignKey(r => r.OrderItemId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<ReviewImage>()
+                .HasOne(ri => ri.Review)
+                .WithMany(r => r.ReviewImages)
+                .HasForeignKey(ri => ri.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ReviewImage>()
+                .Property(ri => ri.ImageUrl)
+                .HasColumnType("LONGTEXT");
+
+            // ReviewReply
+            modelBuilder.Entity<ReviewReply>()
+                .HasOne(rr => rr.Review)
+                .WithMany(r => r.Replies)
+                .HasForeignKey(rr => rr.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ReviewReply>()
+                .HasOne(rr => rr.User)
+                .WithMany()
+                .HasForeignKey(rr => rr.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Coupon
             modelBuilder.Entity<Coupon>()
@@ -349,6 +609,19 @@ namespace EcomerceBE.Data
                 .HasOne(uc => uc.Coupon)
                 .WithMany(c => c.UserCoupons)
                 .HasForeignKey(uc => uc.CouponId);
+
+            modelBuilder.Entity<ShippingMethodCoupon>()
+                .HasKey(smc => new { smc.ShippingMethodId, smc.CouponId });
+
+            modelBuilder.Entity<ShippingMethodCoupon>()
+                .HasOne(smc => smc.ShippingMethod)
+                .WithMany()
+                .HasForeignKey(smc => smc.ShippingMethodId);
+
+            modelBuilder.Entity<ShippingMethodCoupon>()
+                .HasOne(smc => smc.Coupon)
+                .WithMany(c => c.ShippingMethodCoupons)
+                .HasForeignKey(smc => smc.CouponId);
 
 
         }

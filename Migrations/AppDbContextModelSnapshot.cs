@@ -76,6 +76,40 @@ namespace EcomerceBE.Migrations
                     b.ToTable("Addresses");
                 });
 
+            modelBuilder.Entity("EcomerceBE.Models.Brand", b =>
+                {
+                    b.Property<int>("BrandId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("BrandId"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Image")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("code")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("BrandId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.ToTable("Brands");
+                });
+
             modelBuilder.Entity("EcomerceBE.Models.Cart", b =>
                 {
                     b.Property<int>("CartId")
@@ -220,11 +254,22 @@ namespace EcomerceBE.Migrations
                     b.Property<bool>("IsPercent")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<int?>("MaxDiscountAmount")
+                        .HasColumnType("int");
+
                     b.Property<int>("MaxUsage")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("MinOrderAmount")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<int>("UsageCount")
                         .HasColumnType("int");
@@ -278,6 +323,12 @@ namespace EcomerceBE.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("Sold")
+                        .HasColumnType("int");
+
+                    b.Property<int>("saleQuantity")
+                        .HasColumnType("int");
+
                     b.HasKey("FlashSaleItemId");
 
                     b.HasIndex("FlashSaleId");
@@ -307,6 +358,10 @@ namespace EcomerceBE.Migrations
                     b.Property<decimal>("DiscountAmount")
                         .HasColumnType("decimal(65,30)");
 
+                    b.Property<string>("OrderNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
                     b.Property<string>("OrderStatus")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -322,6 +377,12 @@ namespace EcomerceBE.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 
+                    b.Property<decimal>("ShippingCost")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<int?>("ShippingMethodId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
@@ -333,6 +394,8 @@ namespace EcomerceBE.Migrations
                     b.HasIndex("AddressId");
 
                     b.HasIndex("CouponId");
+
+                    b.HasIndex("ShippingMethodId");
 
                     b.HasIndex("UserId");
 
@@ -369,6 +432,58 @@ namespace EcomerceBE.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.OrderStatusLog", b =>
+                {
+                    b.Property<int>("OrderStatusLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("OrderStatusLogId"));
+
+                    b.Property<string>("ActionType")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int?>("ChangedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("NewPaymentStatus")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("NewStatus")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PreviousPaymentStatus")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("PreviousStatus")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.HasKey("OrderStatusLogId");
+
+                    b.HasIndex("ChangedByUserId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("OrderStatusLogs");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.OtpCode", b =>
@@ -448,9 +563,6 @@ namespace EcomerceBE.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<decimal?>("SalePrice")
-                        .HasColumnType("decimal(65,30)");
-
                     b.Property<string>("Slug")
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
@@ -466,6 +578,10 @@ namespace EcomerceBE.Migrations
 
                     b.Property<int?>("ViewCount")
                         .HasColumnType("int");
+
+                    b.Property<string>("productType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.HasKey("ProductId");
 
@@ -527,6 +643,100 @@ namespace EcomerceBE.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.Shipping", b =>
+                {
+                    b.Property<int>("ShippingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ShippingId"));
+
+                    b.Property<string>("Carrier")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("DeliveredDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ShippedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ShippingMethod")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Status")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("TrackingNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("ShippingId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("Shippings");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ShippingMethod", b =>
+                {
+                    b.Property<int>("ShippingMethodId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ShippingMethodId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EstimatedDays")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("ShippingMethodId");
+
+                    b.ToTable("ShippingMethods");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.Size", b =>
@@ -776,12 +986,30 @@ namespace EcomerceBE.Migrations
                     b.ToTable("ProductSizes", (string)null);
                 });
 
+            modelBuilder.Entity("ShippingMethodCoupon", b =>
+                {
+                    b.Property<int>("ShippingMethodId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CouponId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ShippingMethodId", "CouponId");
+
+                    b.HasIndex("CouponId");
+
+                    b.ToTable("ShippingMethodCoupons");
+                });
+
             modelBuilder.Entity("UserCoupon", b =>
                 {
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.Property<int>("CouponId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxUsagePerUser")
                         .HasColumnType("int");
 
                     b.Property<int>("UsedCount")
@@ -803,6 +1031,17 @@ namespace EcomerceBE.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.Brand", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Category", "Categories")
+                        .WithMany("Brands")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Categories");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.Cart", b =>
@@ -906,6 +1145,11 @@ namespace EcomerceBE.Migrations
                         .HasForeignKey("CouponId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("EcomerceBE.Models.ShippingMethod", "ShippingMethod")
+                        .WithMany()
+                        .HasForeignKey("ShippingMethodId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("EcomerceBE.Models.User", "User")
                         .WithMany("Orders")
                         .HasForeignKey("UserId")
@@ -915,6 +1159,8 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("Coupon");
+
+                    b.Navigation("ShippingMethod");
 
                     b.Navigation("User");
                 });
@@ -936,6 +1182,24 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.OrderStatusLog", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.User", "ChangedByUser")
+                        .WithMany()
+                        .HasForeignKey("ChangedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("EcomerceBE.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangedByUser");
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.Product", b =>
@@ -976,6 +1240,17 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.Shipping", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.Wallet", b =>
@@ -1082,6 +1357,25 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Size");
                 });
 
+            modelBuilder.Entity("ShippingMethodCoupon", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Coupon", "Coupon")
+                        .WithMany("ShippingMethodCoupons")
+                        .HasForeignKey("CouponId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EcomerceBE.Models.ShippingMethod", "ShippingMethod")
+                        .WithMany()
+                        .HasForeignKey("ShippingMethodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Coupon");
+
+                    b.Navigation("ShippingMethod");
+                });
+
             modelBuilder.Entity("UserCoupon", b =>
                 {
                     b.HasOne("EcomerceBE.Models.Coupon", "Coupon")
@@ -1113,6 +1407,8 @@ namespace EcomerceBE.Migrations
 
             modelBuilder.Entity("EcomerceBE.Models.Category", b =>
                 {
+                    b.Navigation("Brands");
+
                     b.Navigation("CategorySizes");
 
                     b.Navigation("Children");
@@ -1125,6 +1421,8 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("ProductCoupons");
+
+                    b.Navigation("ShippingMethodCoupons");
 
                     b.Navigation("UserCoupons");
                 });

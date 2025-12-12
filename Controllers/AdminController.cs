@@ -4,6 +4,7 @@ using EcomerceBE.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using BCrypt.Net;
 using static EcomerceBE.Controllers.ProductViewController;
 
 namespace EcomerceBE.Controllers
@@ -20,6 +21,24 @@ namespace EcomerceBE.Controllers
             _context = context;
         }
 
+        public class AdminCreateUserDto
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Email { get; set; } = string.Empty;
+            public string? Role { get; set; } = "User";
+            public string? Status { get; set; } = "active";
+            public string? Password { get; set; }
+        }
+
+        public class AdminUpdateUserDto
+        {
+            public string? Name { get; set; }
+            public string? Email { get; set; }
+            public string? Role { get; set; }
+            public string? Status { get; set; }
+            public string? Password { get; set; }
+        }
+
         // GET: api/admin/dashboard/user?page=1&limit=10
         [HttpGet("dashboard/user")]
         public async Task<IActionResult> GetUsers([FromQuery] int page = 1, [FromQuery] int limit = 10)
@@ -30,17 +49,24 @@ namespace EcomerceBE.Controllers
             var totalUsers = await _context.Users.CountAsync();
 
             var users = await _context.Users
-                .OrderByDescending(u => u.CreatedAt)  // sắp xếp theo ngày tạo nếu có
-                .Skip((page - 1) * limit)
-                .Take(limit)
                 .Select(u => new
                 {
                     u.Id,
                     u.Email,
                     u.Name,
                     u.Role,
-                    u.CreatedAt
+                    status = u.status,
+                    u.CreatedAt,
+                    TotalOrders = _context.Orders.Count(o => o.UserId == u.Id),
+                    LastOrderAt = _context.Orders
+                        .Where(o => o.UserId == u.Id)
+                        .OrderByDescending(o => o.CreatedAt)
+                        .Select(o => (DateTime?)o.CreatedAt)
+                        .FirstOrDefault()
                 })
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
                 .ToListAsync();
 
             return Ok(new
@@ -92,6 +118,17 @@ namespace EcomerceBE.Controllers
                 query = query.Where(u => u.CreatedAt.Date == date);
             }
 
+            // Lọc user có order gần đây
+            if (filter.HasRecentOrders == true)
+            {
+                var days = filter.RecentOrdersDays ?? 30;
+                var cutoffDate = DateTime.UtcNow.AddDays(-days);
+                var userIdsWithRecentOrders = _context.Orders
+                    .Where(o => o.CreatedAt >= cutoffDate)
+                    .Select(o => o.UserId)
+                    .Distinct();
+                query = query.Where(u => userIdsWithRecentOrders.Contains(u.Id));
+            }
 
             // Tổng số user sau filter
             var total = query.Count();
@@ -102,9 +139,6 @@ namespace EcomerceBE.Controllers
             var totalPages = (int)Math.Ceiling(total / (double)limit);
 
             var data = query
-                .OrderByDescending(u => u.CreatedAt)
-                .Skip((page - 1) * limit)
-                .Take(limit)
                 .Select(u => new
                 {
                     u.Id,
@@ -112,20 +146,165 @@ namespace EcomerceBE.Controllers
                     u.Email,
                     u.Role,
                     u.status,
-
-                    u.CreatedAt
+                    u.CreatedAt,
+                    TotalOrders = _context.Orders.Count(o => o.UserId == u.Id),
+                    LastOrderAt = _context.Orders
+                        .Where(o => o.UserId == u.Id)
+                        .OrderByDescending(o => o.CreatedAt)
+                        .Select(o => (DateTime?)o.CreatedAt)
+                        .FirstOrDefault()
                 })
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * limit)
+                .Take(limit)
                 .ToList();
 
             return Ok(new
             {
-                Success = true,
-                Total = total,
-                Page = page,
-                Limit = limit,
-                TotalPages = totalPages,
-                Data = data
+                success = true,
+                total = total,
+                page,
+                limit,
+                totalPages = totalPages,
+                data
             });
+        }
+
+        [HttpPost("users")]
+        public async Task<IActionResult> CreateUser([FromBody] AdminCreateUserDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Name))
+                return BadRequest(new { message = "Name and Email are required." });
+
+            var exists = await _context.Users.AnyAsync(u => u.Email == dto.Email);
+            if (exists) return BadRequest(new { message = "Email already exists." });
+
+            var password = string.IsNullOrWhiteSpace(dto.Password) ? "Temp@" + Guid.NewGuid().ToString("N")[..6] : dto.Password;
+            var user = new User
+            {
+                Name = dto.Name.Trim(),
+                Email = dto.Email.Trim(),
+                Role = string.IsNullOrWhiteSpace(dto.Role) ? "User" : dto.Role,
+                status = string.IsNullOrWhiteSpace(dto.Status) ? "active" : dto.Status,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
+            };
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User created", userId = user.Id, tempPassword = password });
+        }
+
+        [HttpPatch("users/{id:int}")]
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] AdminUpdateUserDto dto)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound(new { message = "User not found." });
+
+            if (!string.IsNullOrWhiteSpace(dto.Email))
+            {
+                var exists = await _context.Users.AnyAsync(u => u.Email == dto.Email && u.Id != id);
+                if (exists) return BadRequest(new { message = "Email already exists." });
+                user.Email = dto.Email.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.Name)) user.Name = dto.Name.Trim();
+            if (!string.IsNullOrWhiteSpace(dto.Role)) user.Role = dto.Role;
+            if (!string.IsNullOrWhiteSpace(dto.Status)) user.status = dto.Status;
+            if (!string.IsNullOrWhiteSpace(dto.Password))
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User updated" });
+        }
+
+        [HttpPatch("users/{id:int}/ban")]
+        public async Task<IActionResult> BanUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound(new { message = "User not found." });
+            user.status = "banned";
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User banned" });
+        }
+
+        [HttpPatch("users/{id:int}/unban")]
+        public async Task<IActionResult> UnbanUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound(new { message = "User not found." });
+            user.status = "active";
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "User unbanned" });
+        }
+
+        [HttpPatch("users/{id:int}/reset-password")]
+        public async Task<IActionResult> ResetPassword(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound(new { message = "User not found." });
+            var tempPassword = "Temp@" + Guid.NewGuid().ToString("N")[..6];
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(tempPassword);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Password reset", tempPassword });
+        }
+
+        [HttpGet("recent-buyers")]
+        public async Task<IActionResult> GetRecentBuyers([FromQuery] int limit = 10)
+        {
+            if (limit <= 0) limit = 10;
+            var buyers = await _context.Orders
+                .Include(o => o.User)
+                .OrderByDescending(o => o.CreatedAt)
+                .GroupBy(o => o.UserId)
+                .Select(g => new
+                {
+                    UserId = g.Key,
+                    Name = g.First().User.Name,
+                    Email = g.First().User.Email,
+                    LastOrderAt = g.Max(o => o.CreatedAt),
+                    LastOrderId = g.OrderByDescending(o => o.CreatedAt).Select(o => o.OrderId).FirstOrDefault(),
+                    TotalOrders = g.Count(),
+                    LastOrderStatus = g.OrderByDescending(o => o.CreatedAt).Select(o => o.OrderStatus).FirstOrDefault(),
+                    LastPaymentStatus = g.OrderByDescending(o => o.CreatedAt).Select(o => o.PaymentStatus).FirstOrDefault()
+                })
+                .OrderByDescending(x => x.LastOrderAt)
+                .Take(limit)
+                .ToListAsync();
+
+            return Ok(buyers);
+        }
+
+        [HttpGet("order-alerts")]
+        public async Task<IActionResult> GetOrderAlerts([FromQuery] int take = 20, [FromQuery] DateTime? since = null)
+        {
+            if (take <= 0) take = 20;
+            var query = _context.Orders
+                .Include(o => o.User)
+                .AsQueryable();
+
+            if (since.HasValue)
+            {
+                // Assume client passes UTC; compare strictly greater than last seen
+                query = query.Where(o => o.CreatedAt > since.Value);
+            }
+
+            var alerts = await query
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(take)
+                .Select(o => new
+                {
+                    o.OrderId,
+                    o.CreatedAt,
+                    o.OrderStatus,
+                    o.PaymentStatus,
+                    UserId = o.UserId,
+                    UserName = o.User.Name,
+                    UserEmail = o.User.Email,
+                    Type = o.OrderStatus != null && o.OrderStatus.ToLower().Contains("cancel") ? "CancelOrder" : "NewOrder"
+                })
+                .ToListAsync();
+            return Ok(alerts);
         }
 
 
@@ -152,6 +331,7 @@ namespace EcomerceBE.Controllers
                     p.Description,
                     p.ImportPrice,
                     p.ReturnDeliveryDay,
+                    p.IsActive,
                     ProductCoupon = p.ProductCoupons.Select(pc => pc.Coupon.Code).ToList(),
                     Category = p.Category.CategorySizes.Select(cs => cs.Size.Name).ToList(),
                     Color = p.ProductSizes
@@ -160,8 +340,13 @@ namespace EcomerceBE.Controllers
                         .Distinct()
                         .ToList(),
 
+                    productType= p.productType,
+                    salePrice = p.FlashSaleItems
+    .Where(ps => p.ProductId == ps.ProductId) // Lọc trước
+    .Select(ps => ps.DiscountPrice)    // Chọn giá sau
+    .FirstOrDefault(),
 
-
+    saleQuantity = p.FlashSaleItems.Where(ps => p.ProductId == ps.ProductId).Select(ps => ps.saleQuantity).FirstOrDefault(),
 
                     // Lấy ảnh thứ 2, nếu không có thì null
                     heroImage = p.Images
@@ -180,15 +365,15 @@ namespace EcomerceBE.Controllers
                         {
                             SizeName = ps.Size != null
                                 ? ps.Size.Name
-                                : ps.CustomValue,
+                                : (ps.CustomValue ?? string.Empty),
 
-                            Color = ps.ProductColors
-                                .Select(pc => new ColorAndquantity
+                            Color = ps.ProductColors != null
+                                ? ps.ProductColors.Select(pc => new ColorAndquantity
                                 {
                                     ColorCode = pc.ColorCode,
                                     quantity = pc.Quantity
-                                })
-                                .ToList()
+                                }).ToList()
+                                : new List<ColorAndquantity>()
                         })
                         .ToList()
                 })
@@ -219,6 +404,27 @@ namespace EcomerceBE.Controllers
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
             return Ok(new { Message = "Product deleted successfully" });
+        }
+
+        public class UpdateVisibilityDto
+        {
+            public bool IsActive { get; set; }
+        }
+
+        // Toggle publish/unview normal product
+        [HttpPatch("normal_products/{id:int}/visibility")]
+        public async Task<IActionResult> UpdateProductVisibility(int id, [FromBody] UpdateVisibilityDto dto)
+        {
+            var product = await _context.Products.FindAsync(id);
+            if (product == null)
+            {
+                return NotFound(new { Message = "Product not found" });
+            }
+
+            product.IsActive = dto.IsActive;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Product visibility updated", IsActive = product.IsActive });
         }
     
 

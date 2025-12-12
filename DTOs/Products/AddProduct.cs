@@ -9,12 +9,13 @@ public sealed class AddProduct
     public decimal Price { get; set; }
     public decimal SalePrice { get; set; }
     public int? ReturnDeliveryDay { get; set; }
-   
+    public string? productType { get; set; }
     public int ?CategoryId { get; set; }
     public List<VariantVm> Variants { get; set; } = new();
     public List<Coupon>? coupons { get; set; } = new();
 
-    
+    public int saleQuantity { get; set; }
+
 }
 
 public sealed class VariantVm

@@ -7,8 +7,10 @@
         public string Description { get; set; }
         public decimal Price { get; set; }
         public decimal ImportPrice { get; set; }
+
+        public string ? productType { get; set; } 
         // Ảnh không có SalePrice, nếu FE không gửi thì mặc định null hoặc 0
-        public decimal ?SalePrice { get; set; }
+        public decimal ? SalePrice { get; set; }
         public int ReturnDeliveryDay { get; set; }
         public int ?CategoryId { get; set; } // FE gửi số (number)
         public string Category { get; set; } // Tên category, thường chỉ để hiển thị, không lưu
@@ -23,6 +25,7 @@
 
         // Map sang Product.Variants (Logic Size/Color)
         public List<ProductVariantDto> Sizes { get; set; }
+        public int ? saleQuantity { get; set; }
     }
 
     // Class con cho Variants (đảm bảo FE gửi đúng cấu trúc này trong mảng 'sizes')
