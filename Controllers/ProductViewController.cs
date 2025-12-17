@@ -38,6 +38,8 @@ namespace EcomerceBE.Controllers
             public List<SizeWithColorsDto> Sizes { get; set; } = new();
             public List<ReviewDto> Reviews { get; set; } = new();
             public int? ReturnDeliveryDay { get; set; }
+            public int? flashSaleRemaining { get; set; } // Remaining flash sale quantity (saleQuantity - Sold)
+            public bool isFlashSale { get; set; } = false; // Indicates if this is a flash sale product
         }
 
 
@@ -46,6 +48,7 @@ namespace EcomerceBE.Controllers
         {
             public string ColorCode { get; set; } = string.Empty;
             public int quantity { get; set; }
+            public int? saleQuantity { get; set; } // Sale quantity for flash sale (per color)
         }
         public class SizeWithColorsDto
         {
@@ -161,7 +164,7 @@ namespace EcomerceBE.Controllers
                     Price = p.Price,
                     Description = p.Description,
                     StarRatingrating = p.StarRating,
-
+                    ReviewCounts = p.Reviews != null ? p.Reviews.Count : 0, // Đếm số reviews
                     ReturnDeliveryDay= p.ReturnDeliveryDay,
                     // Mỗi size có list màu riêng
                     Sizes = p.ProductSizes
@@ -219,6 +222,7 @@ namespace EcomerceBE.Controllers
         {
             var reviews = await _context.Reviews
                 .AsNoTracking()
+                .Include(r => r.User)
                 .Include(r => r.ReviewImages)
                 .Include(r => r.Replies)
                     .ThenInclude(rr => rr.User)

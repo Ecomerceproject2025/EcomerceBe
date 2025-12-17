@@ -9,7 +9,8 @@ namespace EcomerceBE.Service.flashSale
  
         Task<bool> RemoveSaleProductAsync(int flashSaleItemId);
         Task<FlashSale> CreateOrUpdateFlashSaleAsync(int? id, FlashSaleCreateDTO dto);
-
         Task<List<FlashSaleDto>> GetAllFlashSalesWithItemsAsync();
+        Task<bool> DeleteFlashSaleAsync(int flashSaleId);
+        Task CleanupExpiredFlashSalesAsync();
     }
 }

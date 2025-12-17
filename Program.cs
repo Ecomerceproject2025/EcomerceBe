@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using OfficeOpenXml;
 using EcomerceBE.Service.flashSale;
+using EcomerceBE.Service.ModelAI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IFlashSaleService, FlashSaleService>();
+builder.Services.AddHostedService<EcomerceBE.Background.FlashSaleCleanupService>();
+builder.Services.AddHostedService<EcomerceBE.Background.EmbeddingGenerationService>();
+
+// ✅ ModelAI Services
+builder.Services.AddHttpClient(); // For EmbeddingService to call AI Model API
+builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -75,6 +83,7 @@ using (var scope = app.Services.CreateScope())
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // serve wwwroot (e.g. /assets/logo/logo-email.png)
 
 // Chỉ gọi 1 lần UseCors:
 // Nếu dùng chính sách mặc định:

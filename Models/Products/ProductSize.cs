@@ -22,4 +22,5 @@ public class ProductColor
     public ProductSize ProductSize { get; set; } = null!;
 
     public int Quantity { get; set; }
+    public int? SaleQuantity { get; set; }            // Sale quantity for flash sale (optional)
 }

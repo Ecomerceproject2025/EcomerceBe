@@ -53,6 +53,85 @@ namespace EcomerceBE.Controllers
             public DateTime CreatedAt { get; set; }
         }
 
+        // GET /api/review/my/count - Get count of reviews with replies
+        [HttpGet("my/count")]
+        public async Task<IActionResult> GetMyReviewsWithRepliesCount()
+        {
+            var userIdClaim = User.FindFirst("id")
+                            ?? User.FindFirst("Id")
+                            ?? User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized(new { message = "User is not authenticated." });
+
+            var count = await _context.Reviews
+                .Where(r => r.UserId == userId && r.Replies.Any())
+                .CountAsync();
+
+            return Ok(new { count });
+        }
+
+        // GET /api/review/my - Get all reviews created by current user
+        [HttpGet("my")]
+        public async Task<IActionResult> GetMyReviews([FromQuery] int page = 1, [FromQuery] int limit = 20)
+        {
+            var userIdClaim = User.FindFirst("id")
+                            ?? User.FindFirst("Id")
+                            ?? User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
+                return Unauthorized(new { message = "User is not authenticated." });
+
+            if (page < 1) page = 1;
+            if (limit < 1) limit = 20;
+
+            var query = _context.Reviews
+                .AsNoTracking()
+                .Include(r => r.Product)
+                .Include(r => r.ReviewImages)
+                .Include(r => r.Replies)
+                    .ThenInclude(rr => rr.User)
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.CreatedAt);
+
+            var total = await query.CountAsync();
+
+            var reviews = await query
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .Select(r => new ReviewResponseDto
+                {
+                    ReviewId = r.ReviewId,
+                    UserId = r.UserId,
+                    UserName = r.User.Name ?? "Bạn",
+                    UserAvatar = r.User.Avatar,
+                    ProductId = r.ProductId,
+                    ProductName = r.Product.Name,
+                    Rating = r.Rating,
+                    Comment = r.Comment ?? string.Empty,
+                    ImageUrls = r.ReviewImages.Select(ri => ri.ImageUrl).ToList(),
+                    CreatedAt = r.CreatedAt,
+                    Replies = r.Replies.Select(rr => new ReplyResponseDto
+                    {
+                        ReviewReplyId = rr.ReviewReplyId,
+                        UserId = rr.UserId,
+                        UserName = rr.User.Name ?? "Admin",
+                        ReplyText = rr.ReplyText,
+                        CreatedAt = rr.CreatedAt
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                data = reviews,
+                total,
+                page,
+                limit,
+                totalPages = (int)Math.Ceiling(total / (double)limit)
+            });
+        }
+
         // POST /api/review - Create a review
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto dto)
@@ -289,9 +368,8 @@ namespace EcomerceBE.Controllers
             return Ok(new { message = "Review deleted successfully." });
         }
 
-        // POST /api/review/{id}/reply - Reply to a review (Admin only)
+        // POST /api/review/{id}/reply - Reply to a review (Any authenticated user)
         [HttpPost("{id}/reply")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ReplyToReview(int id, [FromBody] ReplyDto dto)
         {
             var userIdClaim = User.FindFirst("id")

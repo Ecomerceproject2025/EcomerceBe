@@ -34,6 +34,7 @@
         public VariantSizeDto size { get; set; }
         public string colorHex { get; set; }
         public int quantity { get; set; }
+        public int? saleQuantity { get; set; }      // Sale quantity for flash sale (optional)
     }
 
     public class VariantSizeDto

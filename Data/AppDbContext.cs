@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using EcomerceBE.Models;
+using EcomerceBE.Models.ModelAI;
 
 namespace EcomerceBE.Data
 {
@@ -279,6 +280,10 @@ namespace EcomerceBE.Data
         public DbSet<ShippingMethodCoupon> ShippingMethodCoupons { get; set; }
 
         public DbSet<Brand> Brands { get; set; }
+
+        // ModelAI
+        public DbSet<UserBehaviorLog> UserBehaviorLogs { get; set; }
+        public DbSet<ProductEmbedding> ProductEmbeddings { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -623,7 +628,48 @@ namespace EcomerceBE.Data
                 .WithMany(c => c.ShippingMethodCoupons)
                 .HasForeignKey(smc => smc.CouponId);
 
+            // ModelAI - UserBehaviorLog
+            modelBuilder.Entity<UserBehaviorLog>()
+                .HasOne(ubl => ubl.User)
+                .WithMany()
+                .HasForeignKey(ubl => ubl.UserId)
+                .OnDelete(DeleteBehavior.SetNull); // Không xóa log khi user bị xóa
+
+            modelBuilder.Entity<UserBehaviorLog>()
+                .HasOne(ubl => ubl.Product)
+                .WithMany()
+                .HasForeignKey(ubl => ubl.ProductId)
+                .OnDelete(DeleteBehavior.Restrict); // Không cho xóa sản phẩm nếu có log
+
+            // Indexes for UserBehaviorLog
+            modelBuilder.Entity<UserBehaviorLog>()
+                .HasIndex(ubl => new { ubl.UserId, ubl.CreatedAt })
+                .HasDatabaseName("IX_UserBehaviorLogs_UserId_CreatedAt");
+
+            modelBuilder.Entity<UserBehaviorLog>()
+                .HasIndex(ubl => new { ubl.ProductId, ubl.BehaviorType })
+                .HasDatabaseName("IX_UserBehaviorLogs_ProductId_BehaviorType");
+
+            modelBuilder.Entity<UserBehaviorLog>()
+                .HasIndex(ubl => ubl.SessionId)
+                .HasDatabaseName("IX_UserBehaviorLogs_SessionId");
+
+            // ModelAI - ProductEmbedding
+            modelBuilder.Entity<ProductEmbedding>()
+                .HasOne(pe => pe.Product)
+                .WithOne()
+                .HasForeignKey<ProductEmbedding>(pe => pe.ProductId)
+                .OnDelete(DeleteBehavior.Cascade); // Xóa embedding khi xóa sản phẩm
+
+            modelBuilder.Entity<ProductEmbedding>()
+                .HasIndex(pe => pe.ProductId)
+                .IsUnique()
+                .HasDatabaseName("IX_ProductEmbeddings_ProductId");
+
+            modelBuilder.Entity<ProductEmbedding>()
+                .Property(pe => pe.EmbeddingVector)
+                .HasColumnType("LONGTEXT");
 
         }
-}
+    }
 }

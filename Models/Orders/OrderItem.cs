@@ -10,6 +10,8 @@ namespace EcomerceBE.Models
         public int? ProductVariantId { get; set; }
         public int Quantity { get; set; }
         public decimal UnitPrice { get; set; } // price at time of order
+        public string? Size { get; set; }
+        public string? Color { get; set; }
 
         public Order Order { get; set; }
         public Product Product { get; set; }

@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using static EcomerceBE.Controllers.ProductViewController;
+using BCrypt.Net;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace EcomerceBE.Controllers
 {
@@ -282,14 +284,12 @@ namespace EcomerceBE.Controllers
                     productType = p.productType,
 
 
-                    // Lấy ảnh thứ 2, nếu không có thì null
+                    // Hero: ảnh đầu tiên (nếu có)
                     heroImage = p.Images
                         .Select(img => img.ImageUrl)
-                        .ElementAtOrDefault(1),
-
-                    // Lấy list từ ảnh thứ 2 trở đi (nếu không có thì list rỗng)
+                        .FirstOrDefault(),
+                    // Các ảnh còn lại
                     ProductImage = p.Images
-
                         .Skip(1)
                         .Select(img => img.ImageUrl)
                         .ToList(),
@@ -321,6 +321,92 @@ namespace EcomerceBE.Controllers
                 page = page,
             }
             );
+        }
+
+        [Authorize]
+        [HttpPut("update-profile")]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest dto)
+        {
+            try
+            {
+                var userIdStr = User.FindFirst("id")?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+                    return Unauthorized("Token Info not match.");
+
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null)
+                    return NotFound("User not found.");
+
+                // Update Avatar
+                if (!string.IsNullOrEmpty(dto.Avatar))
+                {
+                    user.Avatar = dto.Avatar;
+                }
+
+                // Update Name (combine firstName + lastName)
+                if (!string.IsNullOrEmpty(dto.FirstName) || !string.IsNullOrEmpty(dto.LastName))
+                {
+                    var firstName = dto.FirstName?.Trim() ?? "";
+                    var lastName = dto.LastName?.Trim() ?? "";
+                    user.Name = $"{firstName} {lastName}".Trim();
+                }
+
+                // Update Password (if provided)
+                if (!string.IsNullOrEmpty(dto.NewPassword))
+                {
+                    if (string.IsNullOrEmpty(dto.CurrentPassword))
+                        return BadRequest("Current password is required to change password.");
+
+                    // Verify current password
+                    bool isValid = false;
+                    if (user.PasswordHash.StartsWith("$2"))
+                    {
+                        isValid = BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.PasswordHash);
+                    }
+                    else
+                    {
+                        // Fallback: verify using old method (hash comparison)
+                        // This matches the old password hashing method
+                        byte[] salt = System.Text.Encoding.UTF8.GetBytes("my_static_salt");
+                        var hashedInput = Convert.ToBase64String(
+                            Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivation.Pbkdf2(
+                                password: dto.CurrentPassword,
+                                salt: salt,
+                                prf: Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf.HMACSHA256,
+                                iterationCount: 10000,
+                                numBytesRequested: 32));
+                        isValid = user.PasswordHash == hashedInput;
+                    }
+
+                    if (!isValid)
+                        return Unauthorized("Current password is incorrect.");
+
+                    // Hash and update new password
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+                }
+
+                // Note: Address is stored in Addresses table, not in User table
+                // If you want to update a default address, you need to handle it separately
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    Message = "Profile updated successfully.",
+                    User = new
+                    {
+                        Id = user.Id,
+                        Name = user.Name,
+                        Email = user.Email,
+                        Avatar = user.Avatar
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] UpdateProfile failed: {ex.Message}");
+                return StatusCode(500, "Internal server error");
+            }
         }
 
 

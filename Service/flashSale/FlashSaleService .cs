@@ -1,6 +1,7 @@
 ﻿    using EcomerceBE.Data;
     using EcomerceBE.Models;
     using Microsoft.EntityFrameworkCore;
+    using System.Linq;
 
     namespace EcomerceBE.Service.flashSale
     {
@@ -22,7 +23,7 @@
         public class FlashSaleDto
         {
             public int FlashSaleId { get; set; }
-            public string Name { get; set; }
+            public string Name { get; set; } = string.Empty;
             public DateTime StartTime { get; set; }
             public DateTime EndTime { get; set; }
             public List<FlashSaleItemDto> FlashSaleItems { get; set; } = new();
@@ -32,42 +33,47 @@
         {
             public int FlashSaleItemId { get; set; }
             public int ProductId { get; set; }
-            public string ProductName { get; set; }
+            public string ProductName { get; set; } = string.Empty;
             public decimal DiscountPrice { get; set; }
             public decimal OriginalPrice { get; set; }
-            public string ImageUrl { get; set; }
+            public string ImageUrl { get; set; } = string.Empty;
             public int saleQuantity { get; set; }
             public int Sold { get; set; }
         }
 
-        // Repository
-        public async Task<List<FlashSaleDto>> GetAllFlashSalesWithItemsAsync()
+        public async Task CleanupExpiredFlashSalesAsync()
         {
             var now = DateTime.UtcNow;
-
-            // Cleanup: remove expired flash sale items and reactivate products
             var expiredSales = await _db.FlashSales
                 .Include(fs => fs.FlashSaleItems)
                     .ThenInclude(i => i.Product)
                 .Where(fs => fs.EndTime < now)
                 .ToListAsync();
 
-            if (expiredSales.Any())
+            if (!expiredSales.Any()) return;
+
+            foreach (var sale in expiredSales)
             {
-                foreach (var sale in expiredSales)
+                foreach (var item in sale.FlashSaleItems)
                 {
-                    foreach (var item in sale.FlashSaleItems)
+                    if (item.Product != null)
                     {
-                        if (item.Product != null)
-                        {
-                            item.Product.IsActive = true;
-                            item.Product.productType = "Normal";
-                        }
-                        _db.FlashSaleItems.Remove(item);
+                        item.Product.IsActive = true;
+                        item.Product.productType = "Normal";
                     }
                 }
-                await _db.SaveChangesAsync();
+
+                _db.FlashSaleItems.RemoveRange(sale.FlashSaleItems);
+                _db.FlashSales.Remove(sale);
             }
+
+            await _db.SaveChangesAsync();
+        }
+
+        // Repository
+        public async Task<List<FlashSaleDto>> GetAllFlashSalesWithItemsAsync()
+        {
+            await CleanupExpiredFlashSalesAsync();
 
             var data = await _db.FlashSales
                                 .Include(x => x.FlashSaleItems)
@@ -196,6 +202,34 @@
 
         return rowsAffected > 0;
     }
+
+        public async Task<bool> DeleteFlashSaleAsync(int flashSaleId)
+        {
+            var flashSale = await _db.FlashSales
+                .Include(fs => fs.FlashSaleItems)
+                    .ThenInclude(i => i.Product)
+                .FirstOrDefaultAsync(fs => fs.FlashSaleId == flashSaleId);
+
+            if (flashSale == null)
+            {
+                return false;
+            }
+
+            foreach (var item in flashSale.FlashSaleItems)
+            {
+                if (item.Product != null)
+                {
+                    item.Product.IsActive = true;
+                    item.Product.productType = "Normal";
+                }
+            }
+
+            _db.FlashSaleItems.RemoveRange(flashSale.FlashSaleItems);
+            _db.FlashSales.Remove(flashSale);
+
+            await _db.SaveChangesAsync();
+            return true;
+        }
 
 
 

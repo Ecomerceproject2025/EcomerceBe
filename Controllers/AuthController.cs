@@ -110,6 +110,8 @@ namespace Controllers.AuthController
 
 
         //REFRESH TOKEN
+        // AllowAnonymous: This endpoint is used to refresh expired tokens, so it must be accessible without authentication
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         [HttpPost("refresh-token")]
         public IActionResult Refresh([FromBody] RefreshRequest model)
         {
@@ -117,8 +119,26 @@ namespace Controllers.AuthController
                 return BadRequest("Invalid request");
 
             var principal = _authService.GetPrincipalFromExpiredToken(model.Token);
-            var email = principal?.FindFirstValue(ClaimTypes.Email);
-            var user = _context.Users.FirstOrDefault(u => u.Email == email);
+            if (principal == null)
+                return Unauthorized("Invalid token");
+
+            // Try to get email from claims, fallback to user ID if email claim doesn't exist (for old tokens)
+            var email = principal.FindFirstValue(ClaimTypes.Email);
+            User? user = null;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                user = _context.Users.FirstOrDefault(u => u.Email == email);
+            }
+            else
+            {
+                // Fallback: try to get user ID from claims (for backward compatibility with old tokens)
+                var userIdClaim = principal.FindFirst("id")?.Value;
+                if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out var userId))
+                {
+                    user = _context.Users.FirstOrDefault(u => u.Id == userId);
+                }
+            }
 
             if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 return Unauthorized("Invalid refresh token");
@@ -208,10 +228,64 @@ namespace Controllers.AuthController
             });
             _context.SaveChanges();
 
-            // Send email
+            // Build base URL for logo (backend domain)
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var logoUrl = $"{baseUrl}/assets/logo/logo-email.png";
+
+            // Send email with styled template
             var emailService = new Email(HttpContext.RequestServices.GetRequiredService<IConfiguration>());
-            await emailService.SendEmailAsync(email, "Mã xác thực OTP của bạn",
-                $"<h3>Mã OTP của bạn là: <b>{otp}</b></h3><p>Hiệu lực trong 5 phút.</p>");
+            var html = $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+  <meta charset=""UTF-8"">
+  <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+  <title>OTP Verification</title>
+  <style>
+    body {{ margin:0; padding:0; background:#f4f4f4; font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; }}
+    table {{ border-collapse:collapse; width:100%; }}
+    .container {{ max-width:600px; margin:0 auto; background:#ffffff; border-radius:8px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1); }}
+    .header {{ background:#ffffff; padding:30px; text-align:center; border-bottom:2px solid #f0f0f0; }}
+    .content {{ padding:40px 30px; text-align:center; color:#333; }}
+    .otp-code {{ font-size:32px; font-weight:bold; letter-spacing:5px; color:#DB4444; margin:20px 0; background:#fdf2f2; padding:15px; border-radius:5px; display:inline-block; border:1px dashed #DB4444; }}
+    .footer {{ background:#000; color:#fff; padding:30px; text-align:center; font-size:14px; line-height:1.6; }}
+    .footer a {{ color:#fff; text-decoration:none; }}
+    .note {{ font-size:13px; color:#666; margin-top:20px; font-style:italic; }}
+  </style>
+</head>
+<body>
+  <table role=""presentation"" width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"">
+    <tr><td style=""padding:20px 0;"">
+      <div class=""container"">
+        <div class=""header"">
+          <img src=""{logoUrl}"" alt=""EXCLUSIVE"" style=""max-width:150px;height:auto;"">
+        </div>
+        <div class=""content"">
+          <h2 style=""margin-top:0;"">Verification Code</h2>
+          <p>Hello,</p>
+          <p>You recently requested to reset your password (or sign in) for your <strong>EXCLUSIVE</strong> account.</p>
+          <p>Here is your One-Time Password (OTP):</p>
+          <div class=""otp-code"">{otp}</div>
+          <p>This code is valid for <strong>5 minutes</strong>.</p>
+          <div class=""note"">
+            *If you did not request this code, please ignore this email or contact our support team immediately.
+          </div>
+        </div>
+        <div class=""footer"">
+          <h3 style=""margin-top:0;font-size:18px;"">Customer Support</h3>
+          <p>
+            <strong>Address:</strong> 111 Bijoy sarani, Dhaka, DH 1515, Bangladesh.<br>
+            <strong>Email:</strong> <a href=""mailto:exclusive@gmail.com"">exclusive@gmail.com</a><br>
+            <strong>Phone:</strong> +88015-88888-9999
+          </p>
+          <p style=""margin-top:20px;font-size:12px;color:#aaaaaa;"">&copy; 2025 Exclusive. All rights reserved.</p>
+        </div>
+      </div>
+    </td></tr>
+  </table>
+</body>
+</html>";
+            await emailService.SendEmailAsync(email, "Mã xác thực OTP của bạn", html);
 
             return Ok("Đã gửi OTP qua email");
         }

@@ -348,14 +348,12 @@ namespace EcomerceBE.Controllers
 
     saleQuantity = p.FlashSaleItems.Where(ps => p.ProductId == ps.ProductId).Select(ps => ps.saleQuantity).FirstOrDefault(),
 
-                    // Lấy ảnh thứ 2, nếu không có thì null
+                    // Hero: ảnh đầu tiên (nếu có)
                     heroImage = p.Images
                         .Select(img => img.ImageUrl)
-                        .ElementAtOrDefault(1),
-
-                    // Lấy list từ ảnh thứ 2 trở đi (nếu không có thì list rỗng)
+                        .FirstOrDefault(),
+                    // Các ảnh còn lại
                     ProductImage = p.Images
-
                         .Skip(1)
                         .Select(img => img.ImageUrl)
                         .ToList(),

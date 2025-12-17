@@ -338,6 +338,101 @@ namespace EcomerceBE.Migrations
                     b.ToTable("FlashSaleItems");
                 });
 
+            modelBuilder.Entity("EcomerceBE.Models.ModelAI.ProductEmbedding", b =>
+                {
+                    b.Property<int>("ProductEmbeddingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ProductEmbeddingId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("EmbeddingDimension")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EmbeddingVector")
+                        .IsRequired()
+                        .HasColumnType("LONGTEXT");
+
+                    b.Property<string>("ModelName")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("ModelVersion")
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("ProductEmbeddingId");
+
+                    b.HasIndex("ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ProductEmbeddings_ProductId");
+
+                    b.ToTable("ProductEmbeddings");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ModelAI.UserBehaviorLog", b =>
+                {
+                    b.Property<int>("UserBehaviorLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserBehaviorLogId"));
+
+                    b.Property<string>("BehaviorType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("varchar(45)");
+
+                    b.Property<string>("Metadata")
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SessionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ViewDuration")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserBehaviorLogId");
+
+                    b.HasIndex("SessionId")
+                        .HasDatabaseName("IX_UserBehaviorLogs_SessionId");
+
+                    b.HasIndex("ProductId", "BehaviorType")
+                        .HasDatabaseName("IX_UserBehaviorLogs_ProductId_BehaviorType");
+
+                    b.HasIndex("UserId", "CreatedAt")
+                        .HasDatabaseName("IX_UserBehaviorLogs_UserId_CreatedAt");
+
+                    b.ToTable("UserBehaviorLogs");
+                });
+
             modelBuilder.Entity("EcomerceBE.Models.Order", b =>
                 {
                     b.Property<int>("OrderId")
@@ -410,6 +505,9 @@ namespace EcomerceBE.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("OrderItemId"));
 
+                    b.Property<string>("Color")
+                        .HasColumnType("longtext");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -421,6 +519,9 @@ namespace EcomerceBE.Migrations
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("Size")
+                        .HasColumnType("longtext");
 
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18,2)");
@@ -627,6 +728,9 @@ namespace EcomerceBE.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int?>("OrderItemId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
@@ -638,11 +742,68 @@ namespace EcomerceBE.Migrations
 
                     b.HasKey("ReviewId");
 
+                    b.HasIndex("OrderItemId");
+
                     b.HasIndex("ProductId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ReviewImage", b =>
+                {
+                    b.Property<int>("ReviewImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ReviewImageId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("LONGTEXT");
+
+                    b.Property<int>("ReviewId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReviewImageId");
+
+                    b.HasIndex("ReviewId");
+
+                    b.ToTable("ReviewImages");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ReviewReply", b =>
+                {
+                    b.Property<int>("ReviewReplyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("ReviewReplyId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("ReplyText")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ReviewId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ReviewReplyId");
+
+                    b.HasIndex("ReviewId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ReviewReplies");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.Shipping", b =>
@@ -933,6 +1094,9 @@ namespace EcomerceBE.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SaleQuantity")
+                        .HasColumnType("int");
+
                     b.HasKey("ProductColorId");
 
                     b.HasIndex("ProductId");
@@ -1133,6 +1297,35 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("EcomerceBE.Models.ModelAI.ProductEmbedding", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Product", "Product")
+                        .WithOne()
+                        .HasForeignKey("EcomerceBE.Models.ModelAI.ProductEmbedding", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ModelAI.UserBehaviorLog", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EcomerceBE.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("EcomerceBE.Models.Order", b =>
                 {
                     b.HasOne("EcomerceBE.Models.Address", "Address")
@@ -1225,6 +1418,11 @@ namespace EcomerceBE.Migrations
 
             modelBuilder.Entity("EcomerceBE.Models.Review", b =>
                 {
+                    b.HasOne("EcomerceBE.Models.OrderItem", "OrderItem")
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("EcomerceBE.Models.Product", "Product")
                         .WithMany("Reviews")
                         .HasForeignKey("ProductId")
@@ -1237,7 +1435,39 @@ namespace EcomerceBE.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("OrderItem");
+
                     b.Navigation("Product");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ReviewImage", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Review", "Review")
+                        .WithMany("ReviewImages")
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Review");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.ReviewReply", b =>
+                {
+                    b.HasOne("EcomerceBE.Models.Review", "Review")
+                        .WithMany("Replies")
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EcomerceBE.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Review");
 
                     b.Navigation("User");
                 });
@@ -1456,6 +1686,13 @@ namespace EcomerceBE.Migrations
                     b.Navigation("Reviews");
 
                     b.Navigation("WishlistItems");
+                });
+
+            modelBuilder.Entity("EcomerceBE.Models.Review", b =>
+                {
+                    b.Navigation("Replies");
+
+                    b.Navigation("ReviewImages");
                 });
 
             modelBuilder.Entity("EcomerceBE.Models.Size", b =>

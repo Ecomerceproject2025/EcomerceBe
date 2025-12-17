@@ -29,10 +29,10 @@ namespace EcomerceBE.Service.auth
 
             var claims = new[]
             {
-              
+                new Claim(ClaimTypes.Email, user.Email),
                 new Claim("role", user.Role),
                 new Claim("id", user.Id.ToString()),
-                };
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _jwtIssuer,

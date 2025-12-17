@@ -167,3 +167,6 @@ C:\Users\admin\Desktop\mini_project\EcomerceBE\bin\Debug\net9.0\System.Security.
 C:\Users\admin\Desktop\mini_project\EcomerceBE\bin\Debug\net9.0\System.Text.Encoding.CodePages.dll
 C:\Users\admin\Desktop\mini_project\EcomerceBE\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Security.Cryptography.Pkcs.dll
 C:\Users\admin\Desktop\mini_project\EcomerceBE\bin\Debug\net9.0\runtimes\win\lib\net9.0\System.Text.Encoding.CodePages.dll
+C:\Users\admin\Desktop\mini_project\EcomerceBE\bin\Debug\net9.0\EcomerceBE.staticwebassets.runtime.json
+C:\Users\admin\Desktop\mini_project\EcomerceBE\obj\Debug\net9.0\compressed\urhun57nut-5qe5qcrird.gz
+C:\Users\admin\Desktop\mini_project\EcomerceBE\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

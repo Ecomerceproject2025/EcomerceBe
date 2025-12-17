@@ -23,6 +23,7 @@ public sealed class VariantVm
     public SizeVm size { get; set; } = new();      // { type, value }
     public string colorHex { get; set; } = "#000000";
     public int quantity { get; set; }
+    public int? saleQuantity { get; set; }         // Sale quantity for flash sale (optional)
 }
 
 public sealed class SizeVm

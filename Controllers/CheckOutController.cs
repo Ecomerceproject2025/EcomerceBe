@@ -31,6 +31,8 @@ namespace EcomerceBE.Controllers
             public int? ProductVariantId { get; set; }
             public int Quantity { get; set; }
             public decimal UnitPrice { get; set; } // VND tại thời điểm đặt
+            public string? Size { get; set; }
+            public string? Color { get; set; }
         }
 
         public class CheckoutOrderDto
@@ -119,6 +121,10 @@ namespace EcomerceBE.Controllers
             var productIds = dto.OrderItems.Select(i => i.ProductId).ToList();
             var products = await _context.Products
                 .Where(p => productIds.Contains(p.ProductId))
+                .Include(p => p.FlashSaleItems)
+                    .ThenInclude(fsi => fsi.FlashSale)
+                .Include(p => p.ProductSizes)
+                    .ThenInclude(ps => ps.ProductColors)
                 .ToDictionaryAsync(p => p.ProductId, p => p);
 
             decimal computedSubtotal = 0m;
@@ -133,6 +139,33 @@ namespace EcomerceBE.Controllers
                 // Kiểm tra tồn kho nếu có trường Stock
                 if (prod.StockQuantity.HasValue && prod.StockQuantity.Value < item.Quantity)
                     return BadRequest(new { message = $"Insufficient stock for product {item.ProductId}." });
+
+                // Check active flash sale (global per product)
+                var now = DateTime.UtcNow;
+                var activeFlashSaleItem = prod.FlashSaleItems?
+                    .FirstOrDefault(fsi => fsi.FlashSale != null
+                                           && fsi.FlashSale.StartTime <= now
+                                           && fsi.FlashSale.EndTime >= now);
+                if (activeFlashSaleItem != null)
+                {
+                    if (activeFlashSaleItem.saleQuantity < item.Quantity)
+                        return BadRequest(new { message = $"Flash sale quantity not enough for product {item.ProductId}." });
+                }
+
+                // Check per-color sale quantity if provided
+                var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                var colorKey = item.Color?.Trim().ToLowerInvariant();
+                ProductColor? colorEntry = null;
+                if (!string.IsNullOrEmpty(colorKey) || !string.IsNullOrEmpty(sizeKey))
+                {
+                    var sizeEntry = prod.ProductSizes.FirstOrDefault(ps =>
+                        (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                        (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+                    colorEntry = sizeEntry?.ProductColors.FirstOrDefault(pc =>
+                        pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                }
+                if (colorEntry != null && colorEntry.SaleQuantity.HasValue && colorEntry.SaleQuantity.Value < item.Quantity)
+                    return BadRequest(new { message = $"Flash sale variant quantity not enough for product {item.ProductId}." });
 
                 computedSubtotal += item.UnitPrice * item.Quantity;
             }
@@ -204,13 +237,49 @@ namespace EcomerceBE.Controllers
                 ProductId = i.ProductId,
                 ProductVariantId = i.ProductVariantId,
                 Quantity = i.Quantity,
-                UnitPrice = i.UnitPrice
+                UnitPrice = i.UnitPrice,
+                Size = i.Size,
+                Color = i.Color
             }).ToList();
 
             await using var trx = await _context.Database.BeginTransactionAsync();
             try
             {
                 _context.Orders.Add(order);
+
+                // Deduct flash sale quantities upfront (per product and per color variant) and increment Sold
+                var now = DateTime.UtcNow;
+                foreach (var item in order.OrderItems)
+                {
+                    var prod = products[item.ProductId];
+
+                    var activeFlashSaleItem = prod.FlashSaleItems?
+                        .FirstOrDefault(fsi => fsi.FlashSale != null
+                                               && fsi.FlashSale.StartTime <= now
+                                               && fsi.FlashSale.EndTime >= now);
+                    if (activeFlashSaleItem != null)
+                    {
+                        activeFlashSaleItem.saleQuantity = Math.Max(0, activeFlashSaleItem.saleQuantity - item.Quantity);
+                        activeFlashSaleItem.Sold += item.Quantity;
+                        if (activeFlashSaleItem.Sold > activeFlashSaleItem.saleQuantity + item.Quantity)
+                            activeFlashSaleItem.Sold = activeFlashSaleItem.saleQuantity + item.Quantity; // cap safeguard
+                    }
+
+                    var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                    var colorKey = item.Color?.Trim().ToLowerInvariant();
+                    if (!string.IsNullOrEmpty(colorKey) || !string.IsNullOrEmpty(sizeKey))
+                    {
+                        var sizeEntry = prod.ProductSizes.FirstOrDefault(ps =>
+                            (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                            (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+                        var colorEntry = sizeEntry?.ProductColors.FirstOrDefault(pc =>
+                            pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                        if (colorEntry != null && colorEntry.SaleQuantity.HasValue)
+                        {
+                            colorEntry.SaleQuantity = Math.Max(0, colorEntry.SaleQuantity.Value - item.Quantity);
+                        }
+                    }
+                }
                 await _context.SaveChangesAsync();
 
                 // Update coupon usage
@@ -297,7 +366,9 @@ namespace EcomerceBE.Controllers
                         oi.ProductId,
                         oi.Quantity,
                         oi.UnitPrice,
-                        ProductName = oi.Product.Name
+                        ProductName = oi.Product.Name,
+                        size = oi.Size,
+                        color = oi.Color
                     })
                 })
                 .ToListAsync();
@@ -335,7 +406,9 @@ namespace EcomerceBE.Controllers
                         oi.ProductId,
                         oi.Quantity,
                         oi.UnitPrice,
-                        ProductName = oi.Product.Name
+                        ProductName = oi.Product.Name,
+                        size = oi.Size,
+                        color = oi.Color
                     })
                 })
                 .ToListAsync();
@@ -557,35 +630,272 @@ namespace EcomerceBE.Controllers
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var userId))
                 return Unauthorized(new { message = "User is not authenticated." });
 
-            var order = await _context.Orders.FindAsync(orderId);
+            // Load order with all necessary navigation properties for inventory deduction
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductSizes)
+                            .ThenInclude(ps => ps.Size) // Include Size for proper matching
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductSizes)
+                            .ThenInclude(ps => ps.ProductColors)
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                    .ThenInclude(p => p.FlashSaleItems)
+                        .ThenInclude(fsi => fsi.FlashSale)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+            
             if (order == null)
                 return NotFound(new { message = "Order not found." });
 
             if (order.UserId != userId)
                 return StatusCode(403, new { message = "You can only update your own orders." });
 
+            // Idempotency check: prevent double deduction
+            if (order.OrderStatus == "Delivered")
+                return Ok(new { message = "Order already delivered.", orderId = order.OrderId });
+
+            // Validate order status transition
             if (order.OrderStatus != "Shipped")
                 return BadRequest(new { message = "Only shipped orders can be marked as delivered." });
 
-            order.OrderStatus = "Delivered";
-            order.PaymentStatus = "Completed"; // Auto-complete payment when delivered
-
-            // Log status change
-            var statusLog = new OrderStatusLog
+            // Wrap all operations in a transaction for atomicity
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                OrderId = orderId,
-                PreviousStatus = "Shipped",
-                NewStatus = "Delivered",
-                PreviousPaymentStatus = order.PaymentStatus,
-                NewPaymentStatus = "Completed",
-                ActionType = "Mark Delivered by User",
-                Notes = "User confirmed delivery",
-                ChangedByUserId = userId,
-                CreatedAt = DateTime.UtcNow
-            };
-            _context.OrderStatusLogs.Add(statusLog);
+                // Validate inventory availability before deduction
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.Product == null) continue;
 
-            await _context.SaveChangesAsync();
+                    // Compute total available stock (use StockQuantity if set, else sum variant quantities)
+                    var totalVariantQty = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors).Sum(pc => pc.Quantity);
+                    var currentTotalQty = item.Product.StockQuantity ?? totalVariantQty;
+                    if (currentTotalQty < item.Quantity)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(new 
+                        { 
+                            message = $"Insufficient inventory for product {item.Product.Name} (ID: {item.ProductId}). Available: {currentTotalQty}, Required: {item.Quantity}" 
+                        });
+                    }
+
+                    // Validate ProductColor.Quantity if size/color specified
+                    var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                    var colorKey = item.Color?.Trim().ToLowerInvariant();
+
+                    // Resolve variant strictly by ProductVariantId or size/color
+                    ProductColor? colorEntry = null;
+                    ProductSize? sizeEntry = null;
+                    if (item.ProductVariantId.HasValue)
+                    {
+                        // 1) ProductVariantId as ProductColorId
+                        colorEntry = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors)
+                            .FirstOrDefault(pc => pc.ProductColorId == item.ProductVariantId.Value);
+
+                        // 2) ProductVariantId as ProductSizeId (needs color)
+                        if (colorEntry == null)
+                        {
+                            sizeEntry = item.Product.ProductSizes.FirstOrDefault(ps => ps.ProductSizeId == item.ProductVariantId.Value);
+                            if (sizeEntry != null)
+                            {
+                                if (!string.IsNullOrEmpty(colorKey))
+                                {
+                                    colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                        pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                                }
+                                else if (sizeEntry.ProductColors.Count == 1)
+                                {
+                                    colorEntry = sizeEntry.ProductColors.First();
+                                }
+                                else
+                                {
+                                    await transaction.RollbackAsync();
+                                    return BadRequest(new
+                                    {
+                                        message = "Color is required for this size variant."
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback to size/color text matching
+                    if (colorEntry == null && (!string.IsNullOrEmpty(sizeKey) || !string.IsNullOrEmpty(colorKey)))
+                    {
+                        sizeEntry ??= item.Product.ProductSizes.FirstOrDefault(ps =>
+                            (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                            (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+
+                        if (sizeEntry != null)
+                        {
+                            if (!string.IsNullOrEmpty(colorKey))
+                            {
+                                colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                    pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                            }
+                            else if (sizeEntry.ProductColors.Count == 1)
+                            {
+                                colorEntry = sizeEntry.ProductColors.First();
+                            }
+                            else
+                            {
+                                await transaction.RollbackAsync();
+                                return BadRequest(new
+                                {
+                                    message = "Color is required for this size."
+                                });
+                            }
+                        }
+                    }
+
+                    if (colorEntry == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(new
+                        {
+                            message = "Cannot resolve product variant (size/color)."
+                        });
+                    }
+
+                    if (colorEntry.Quantity < item.Quantity)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(new 
+                        { 
+                            message = $"Insufficient inventory for product {item.Product.Name} - Variant out of stock. Available: {colorEntry.Quantity}, Required: {item.Quantity}" 
+                        });
+                    }
+                }
+
+                // All validations passed, proceed with inventory deduction
+                var previousPaymentStatus = order.PaymentStatus;
+                order.OrderStatus = "Delivered";
+                order.PaymentStatus = "Completed"; // Auto-complete payment when delivered
+
+                // Deduct inventory for each order item
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.Product == null) continue;
+
+                    // Deduct from Product.StockQuantity (TotalQuantity) using computed total
+                    var totalVariantQty = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors).Sum(pc => pc.Quantity);
+                    var currentTotalQty = item.Product.StockQuantity ?? totalVariantQty;
+                    item.Product.StockQuantity = Math.Max(0, currentTotalQty - item.Quantity);
+
+                    // Update sold count
+                    item.Product.SoldCount = (item.Product.SoldCount ?? 0) + item.Quantity;
+
+                    // Deduct from ProductColor.Quantity and ensure ProductSize consistency
+                    var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                    var colorKey = item.Color?.Trim().ToLowerInvariant();
+
+                    // Resolve variant strictly by ProductVariantId or size/color
+                    ProductColor? colorEntry = null;
+                    ProductSize? sizeEntry = null;
+                    if (item.ProductVariantId.HasValue)
+                    {
+                        colorEntry = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors)
+                            .FirstOrDefault(pc => pc.ProductColorId == item.ProductVariantId.Value);
+
+                        if (colorEntry == null)
+                        {
+                            sizeEntry = item.Product.ProductSizes.FirstOrDefault(ps => ps.ProductSizeId == item.ProductVariantId.Value);
+                            if (sizeEntry != null)
+                            {
+                                if (!string.IsNullOrEmpty(colorKey))
+                                {
+                                    colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                        pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                                }
+                                else if (sizeEntry.ProductColors.Count == 1)
+                                {
+                                    colorEntry = sizeEntry.ProductColors.First();
+                                }
+                            }
+                        }
+                    }
+
+                    if (colorEntry == null && (!string.IsNullOrEmpty(sizeKey) || !string.IsNullOrEmpty(colorKey)))
+                    {
+                        // Find matching ProductSize
+                        sizeEntry ??= item.Product.ProductSizes.FirstOrDefault(ps =>
+                            (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                            (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+
+                        if (sizeEntry != null)
+                        {
+                            if (!string.IsNullOrEmpty(colorKey))
+                            {
+                                colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                    pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                            }
+                            else if (sizeEntry.ProductColors.Count == 1)
+                            {
+                                colorEntry = sizeEntry.ProductColors.First();
+                            }
+                        }
+                    }
+
+                    if (colorEntry == null)
+                    {
+                        continue; // guard
+                    }
+
+                    if (colorEntry != null)
+                    {
+                        // Deduct from ProductColor.Quantity
+                        colorEntry.Quantity = Math.Max(0, colorEntry.Quantity - item.Quantity);
+
+                        // Deduct per-color saleQuantity if defined (flash sale per color)
+                        if (colorEntry.SaleQuantity.HasValue && colorEntry.SaleQuantity.Value > 0)
+                        {
+                            var newSaleQty = colorEntry.SaleQuantity.Value - item.Quantity;
+                            colorEntry.SaleQuantity = newSaleQty < 0 ? 0 : newSaleQty;
+                        }
+
+                        // Update FlashSale sold count if product is in an active flash sale
+                        var now = DateTime.UtcNow;
+                        var flashSaleItem = item.Product.FlashSaleItems?
+                            .FirstOrDefault(fsi => fsi.ProductId == item.ProductId
+                                                   && fsi.FlashSale != null
+                                                   && fsi.FlashSale.StartTime <= now
+                                                   && fsi.FlashSale.EndTime >= now);
+                        if (flashSaleItem != null)
+                        {
+                            flashSaleItem.Sold += item.Quantity;
+                            if (flashSaleItem.Sold < 0) flashSaleItem.Sold = 0;
+                            if (flashSaleItem.Sold > flashSaleItem.saleQuantity)
+                                flashSaleItem.Sold = flashSaleItem.saleQuantity;
+                        }
+                    }
+                }
+
+                // Log status change
+                var statusLog = new OrderStatusLog
+                {
+                    OrderId = orderId,
+                    PreviousStatus = "Shipped",
+                    NewStatus = "Delivered",
+                    PreviousPaymentStatus = previousPaymentStatus,
+                    NewPaymentStatus = "Completed",
+                    ActionType = "Mark Delivered by User",
+                    Notes = "User confirmed delivery",
+                    ChangedByUserId = userId,
+                    CreatedAt = DateTime.UtcNow
+                };
+                _context.OrderStatusLogs.Add(statusLog);
+
+                // Save all changes atomically
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { message = "Failed to mark order as delivered. Please try again.", detail = ex.Message });
+            }
 
             return Ok(new { message = "Order marked as delivered successfully.", orderId = order.OrderId });
         }

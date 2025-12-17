@@ -1,12 +1,465 @@
 {
   "Version": 1,
-  "Hash": "RZCd12kO16XE6yTRAi9GYKxuWZSoAYKO8PgIciMVvdQ=",
+  "Hash": "g94o2Pynr+XVsd81dIUAEEn1iwPxbSNNX4FfO232o0M=",
   "Source": "EcomerceBE",
   "BasePath": "_content/EcomerceBE",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": [],
-  "Endpoints": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "EcomerceBE\\wwwroot",
+      "Source": "EcomerceBE",
+      "ContentRoot": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\",
+      "BasePath": "_content/EcomerceBE",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\obj\\Debug\\net9.0\\compressed\\urhun57nut-5qe5qcrird.gz",
+      "SourceId": "EcomerceBE",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\obj\\Debug\\net9.0\\compressed\\",
+      "BasePath": "_content/EcomerceBE",
+      "RelativePath": "assets/logo/README#[.{fingerprint=5qe5qcrird}]?.md.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\README.md",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "01cv0vkesn",
+      "Integrity": "XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\README.md"
+    },
+    {
+      "Identity": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\logo-email.png",
+      "SourceId": "EcomerceBE",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\",
+      "BasePath": "_content/EcomerceBE",
+      "RelativePath": "assets/logo/logo-email#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "q7149vmz6e",
+      "Integrity": "JoTPqJXZK6pRYpv7t4UesoUCsuQduZr/ZPBKEp7TvOw=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\logo\\logo-email.png"
+    },
+    {
+      "Identity": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\README.md",
+      "SourceId": "EcomerceBE",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\",
+      "BasePath": "_content/EcomerceBE",
+      "RelativePath": "assets/logo/README#[.{fingerprint}]?.md",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "5qe5qcrird",
+      "Integrity": "M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\logo\\README.md"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "assets/logo/logo-email.png",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\logo-email.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "620754"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"JoTPqJXZK6pRYpv7t4UesoUCsuQduZr/ZPBKEp7TvOw=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 07:58:59 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-JoTPqJXZK6pRYpv7t4UesoUCsuQduZr/ZPBKEp7TvOw="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/logo-email.q7149vmz6e.png",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\logo-email.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "620754"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"JoTPqJXZK6pRYpv7t4UesoUCsuQduZr/ZPBKEp7TvOw=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 07:58:59 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "q7149vmz6e"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/logo/logo-email.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-JoTPqJXZK6pRYpv7t4UesoUCsuQduZr/ZPBKEp7TvOw="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/README.5qe5qcrird.md",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\obj\\Debug\\net9.0\\compressed\\urhun57nut-5qe5qcrird.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.002932551320"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "340"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 08:09:09 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/markdown"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "5qe5qcrird"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/logo/README.md"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/README.5qe5qcrird.md",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\README.md",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "527"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/markdown"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 08:09:09 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "5qe5qcrird"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/logo/README.md"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/README.5qe5qcrird.md.gz",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\obj\\Debug\\net9.0\\compressed\\urhun57nut-5qe5qcrird.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "340"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/markdown"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 08:09:09 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "5qe5qcrird"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/logo/README.md.gz"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/README.md",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\obj\\Debug\\net9.0\\compressed\\urhun57nut-5qe5qcrird.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "0.002932551320"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "340"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 08:09:09 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/markdown"
+        },
+        {
+          "Name": "ETag",
+          "Value": "W/\"M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg=\""
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/README.md",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\wwwroot\\assets\\logo\\README.md",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "527"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/markdown"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 08:09:09 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-M+wLFoGSQDOB+/N91iYUtzeMHHfqHjAybNoR51HiWXg="
+        }
+      ]
+    },
+    {
+      "Route": "assets/logo/README.md.gz",
+      "AssetFile": "C:\\Users\\admin\\Desktop\\mini_project\\EcomerceBE\\obj\\Debug\\net9.0\\compressed\\urhun57nut-5qe5qcrird.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "340"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/markdown"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 16 Dec 2025 08:09:09 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-XBWT7/c7GuKN/wcE3sWNI1gPi14v7mPlTAr82T9LntY="
+        }
+      ]
+    }
+  ]
 }

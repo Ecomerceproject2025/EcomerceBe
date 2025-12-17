@@ -496,6 +496,43 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EcomerceBE.Controllers.ContactController",
+    "Method": "GetContactMessages",
+    "RelativePath": "api/Contact/list",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ContactController",
+    "Method": "SendContactMessage",
+    "RelativePath": "api/Contact/send",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EcomerceBE.DTOs.Contact.ContactRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EcomerceBE.Controllers.CouponController",
     "Method": "GetCoupons",
     "RelativePath": "api/coupons",
@@ -722,6 +759,148 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EcomerceBE.Controllers.DashboardController",
+    "Method": "GetMetrics",
+    "RelativePath": "api/Dashboard/metrics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.DashboardController",
+    "Method": "GetMonthlySales",
+    "RelativePath": "api/Dashboard/monthly-sales",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "year",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.DashboardController",
+    "Method": "GetProductsByCategory",
+    "RelativePath": "api/Dashboard/products-by-category",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.DashboardController",
+    "Method": "GetRecentOrders",
+    "RelativePath": "api/Dashboard/recent-orders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.DashboardController",
+    "Method": "GetStatistics",
+    "RelativePath": "api/Dashboard/statistics",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "period",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.DashboardController",
+    "Method": "GetTopSellingProducts",
+    "RelativePath": "api/Dashboard/top-selling-products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.EmbeddingController",
+    "Method": "GenerateAllEmbeddings",
+    "RelativePath": "api/Embedding/generate-all",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.EmbeddingController",
+    "Method": "GenerateEmbeddingForProduct",
+    "RelativePath": "api/Embedding/generate/{productId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.EmbeddingController",
+    "Method": "TestGenerateEmbedding",
+    "RelativePath": "api/Embedding/test",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "text",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.FlashSaleController",
+    "Method": "DeleteFlashSale",
+    "RelativePath": "api/FlashSale/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EcomerceBE.Controllers.FlashSaleController",
     "Method": "RemoveProductFromSale",
     "RelativePath": "api/FlashSale/{productId}/remove-item",
@@ -745,6 +924,22 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.FlashSaleController",
+    "Method": "GetFlashSaleItemByProductId",
+    "RelativePath": "api/FlashSale/GetItemByProductId/{productId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -848,6 +1043,27 @@
   },
   {
     "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "GetDeliveryQr",
+    "RelativePath": "api/orders/{id}/delivery-qr",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "confirmBaseUrl",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
     "Method": "RefundOrder",
     "RelativePath": "api/orders/{id}/refund",
     "HttpMethod": "POST",
@@ -883,6 +1099,22 @@
       {
         "Name": "dto",
         "Type": "EcomerceBE.Controllers.OrderController\u002BUpdateOrderStatusDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "ConfirmDelivery",
+    "RelativePath": "api/orders/confirm-delivery",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.Controllers.OrderController\u002BConfirmDeliveryDto",
         "IsRequired": true
       }
     ],
@@ -1057,6 +1289,59 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.RecommendationController",
+    "Method": "GetContentBasedRecommendations",
+    "RelativePath": "api/Recommendation/content-based/{productId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "topK",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.RecommendationController",
+    "Method": "GetRecommendations",
+    "RelativePath": "api/Recommendation/get-recommendations",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EcomerceBE.DTOs.ModelAI.GetRecommendationsRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.RecommendationController",
+    "Method": "GetUserBasedRecommendations",
+    "RelativePath": "api/Recommendation/user-based",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "topK",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EcomerceBE.Controllers.ReviewController",
     "Method": "CreateReview",
     "RelativePath": "api/Review",
@@ -1107,6 +1392,37 @@
         "IsRequired": true
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "GetMyReviews",
+    "RelativePath": "api/Review/my",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ReviewController",
+    "Method": "GetMyReviewsWithRepliesCount",
+    "RelativePath": "api/Review/my/count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
@@ -1440,6 +1756,80 @@
       {
         "Name": "id",
         "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.UserController",
+    "Method": "UpdateProfile",
+    "RelativePath": "api/User/update-profile",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "EcomerceBE.DTOs.UpdateProfileRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.UserBehaviorController",
+    "Method": "GetUserBehaviorHistory",
+    "RelativePath": "api/UserBehavior/history",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "page",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "pageSize",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "behaviorType",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.UserBehaviorController",
+    "Method": "TrackUserBehavior",
+    "RelativePath": "api/UserBehavior/track",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EcomerceBE.DTOs.ModelAI.UserBehaviorRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ModelAI.UserBehaviorController",
+    "Method": "TrackAnonymousBehavior",
+    "RelativePath": "api/UserBehavior/track-anonymous",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EcomerceBE.DTOs.ModelAI.UserBehaviorRequest",
         "IsRequired": true
       }
     ],

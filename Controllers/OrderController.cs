@@ -4,7 +4,10 @@ using EcomerceBE.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace EcomerceBE.Controllers
 {
@@ -15,11 +18,48 @@ namespace EcomerceBE.Controllers
     {
         private readonly AppDbContext _context;
         private readonly ILogger<OrderController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public OrderController(AppDbContext context, ILogger<OrderController> logger)
+        public OrderController(AppDbContext context, ILogger<OrderController> logger, IConfiguration configuration)
         {
             _context = context;
             _logger = logger;
+            _configuration = configuration;
+        }
+
+        private string GetDeliverySecret()
+        {
+            var secret = Environment.GetEnvironmentVariable("DELIVERY_TOKEN_SECRET");
+            if (string.IsNullOrWhiteSpace(secret))
+            {
+                // fallback to appsettings Delivery:DeliveryTokenSecret
+                secret = _configuration["Delivery:DeliveryTokenSecret"];
+            }
+            if (string.IsNullOrWhiteSpace(secret))
+                throw new InvalidOperationException("DELIVERY_TOKEN_SECRET is not configured.");
+            return secret;
+        }
+
+        private string ComputeDeliveryToken(int orderId, DateTime createdAtUtc)
+        {
+            var secret = GetDeliverySecret();
+            var payload = $"{orderId}:{createdAtUtc.Ticks}";
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
+            var sig = Convert.ToHexString(hash).ToLowerInvariant();
+            return $"{payload}:{sig}";
+        }
+
+        private bool ValidateDeliveryToken(string token, out int orderId)
+        {
+            orderId = 0;
+            if (string.IsNullOrWhiteSpace(token)) return false;
+            var parts = token.Split(':');
+            if (parts.Length != 3) return false;
+            if (!int.TryParse(parts[0], out orderId)) return false;
+            if (!long.TryParse(parts[1], out var ticks)) return false;
+            var expected = ComputeDeliveryToken(orderId, new DateTime(ticks, DateTimeKind.Utc));
+            return string.Equals(expected, token, StringComparison.Ordinal);
         }
 
         // Order status flow validation
@@ -182,7 +222,9 @@ namespace EcomerceBE.Controllers
                     oi.ProductId,
                     oi.Quantity,
                     oi.UnitPrice,
-                    ProductName = oi.Product.Name
+                    ProductName = oi.Product.Name,
+                    size = oi.Size,
+                    color = oi.Color
                 }).ToList(),
                 Shipping = shippings.TryGetValue(o.OrderId, out var ship) ? new
                 {
@@ -204,6 +246,324 @@ namespace EcomerceBE.Controllers
                     totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
                 }
             });
+        }
+
+        [HttpGet("{id}/delivery-qr")]
+        public async Task<IActionResult> GetDeliveryQr(int id, [FromQuery] string? confirmBaseUrl = null)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.OrderId == id);
+            if (order == null) return NotFound(new { message = "Order not found." });
+
+            var token = ComputeDeliveryToken(order.OrderId, order.CreatedAt);
+            var baseUrl = confirmBaseUrl ?? Environment.GetEnvironmentVariable("DELIVERY_CONFIRM_BASEURL") ?? "";
+            var confirmUrl = string.IsNullOrWhiteSpace(baseUrl)
+                ? $"https://example.com/ship/confirm?token={token}"
+                : $"{baseUrl.TrimEnd('/')}/ship/confirm?token={Uri.EscapeDataString(token)}";
+
+            return Ok(new
+            {
+                token,
+                confirmUrl
+            });
+        }
+
+        [HttpPost("confirm-delivery")]
+        [Authorize(Roles = "Shipper,Admin")]
+        public async Task<IActionResult> ConfirmDelivery([FromBody] ConfirmDeliveryDto dto)
+        {
+            // Get authenticated shipper user
+            var userIdClaim = User.FindFirst("id")
+                            ?? User.FindFirst("Id")
+                            ?? User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var shipperUserId))
+                return Unauthorized(new { message = "Shipper authentication required." });
+
+            // Verify user has Shipper role
+            var user = await _context.Users.FindAsync(shipperUserId);
+            if (user == null)
+                return Unauthorized(new { message = "Shipper account not found." });
+
+            if (!user.Role.Equals("Shipper", StringComparison.OrdinalIgnoreCase) && 
+                !user.Role.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                return Forbid("Only shippers can confirm delivery.");
+
+            if (dto == null || string.IsNullOrWhiteSpace(dto.Token))
+                return BadRequest(new { message = "Token is required." });
+
+            if (!ValidateDeliveryToken(dto.Token, out var orderId))
+                return BadRequest(new { message = "Invalid token." });
+
+            // Load order with all necessary navigation properties for inventory deduction
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductSizes)
+                            .ThenInclude(ps => ps.Size) // Include Size for proper matching
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductSizes)
+                            .ThenInclude(ps => ps.ProductColors)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.FlashSaleItems)
+                            .ThenInclude(fsi => fsi.FlashSale)
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
+
+            if (order == null) return NotFound(new { message = "Order not found." });
+
+            // Idempotency check: prevent double deduction
+            if (order.OrderStatus == "Delivered")
+                return Ok(new { message = "Order already delivered.", orderId = order.OrderId });
+
+            // Validate order status transition
+            if (order.OrderStatus != "Shipped")
+                return BadRequest(new { message = "Only shipped orders can be confirmed as delivered." });
+
+            // Wrap all operations in a transaction for atomicity
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Validate inventory availability before deduction
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.Product == null) continue;
+
+                    // Compute total available stock (use StockQuantity if set, else sum variant quantities)
+                    var totalVariantQty = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors).Sum(pc => pc.Quantity);
+                    var currentTotalQty = item.Product.StockQuantity ?? totalVariantQty;
+                    if (currentTotalQty < item.Quantity)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(new 
+                        { 
+                            message = $"Insufficient inventory for product {item.Product.Name} (ID: {item.ProductId}). Available: {currentTotalQty}, Required: {item.Quantity}" 
+                        });
+                    }
+
+                    // Validate ProductColor.Quantity if size/color specified
+                    // Validate variant stock if applicable
+                    var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                    var colorKey = item.Color?.Trim().ToLowerInvariant();
+
+                    // Resolve variant strictly by ProductVariantId or size/color
+                    ProductColor? colorEntry = null;
+                    ProductSize? sizeEntry = null;
+                    if (item.ProductVariantId.HasValue)
+                    {
+                        // 1) ProductVariantId as ProductColorId
+                        colorEntry = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors)
+                            .FirstOrDefault(pc => pc.ProductColorId == item.ProductVariantId.Value);
+
+                        // 2) ProductVariantId as ProductSizeId (needs color)
+                        if (colorEntry == null)
+                        {
+                            sizeEntry = item.Product.ProductSizes.FirstOrDefault(ps => ps.ProductSizeId == item.ProductVariantId.Value);
+                            if (sizeEntry != null)
+                            {
+                                if (!string.IsNullOrEmpty(colorKey))
+                                {
+                                    colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                        pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                                }
+                                else if (sizeEntry.ProductColors.Count == 1)
+                                {
+                                    colorEntry = sizeEntry.ProductColors.First();
+                                }
+                                else
+                                {
+                                    await transaction.RollbackAsync();
+                                    return BadRequest(new
+                                    {
+                                        message = "Color is required for this size variant."
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    // Fallback to size/color text matching
+                    if (colorEntry == null && (!string.IsNullOrEmpty(sizeKey) || !string.IsNullOrEmpty(colorKey)))
+                    {
+                        sizeEntry ??= item.Product.ProductSizes.FirstOrDefault(ps =>
+                            (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                            (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+
+                        if (sizeEntry != null)
+                        {
+                            if (!string.IsNullOrEmpty(colorKey))
+                            {
+                                colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                    pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                            }
+                            else if (sizeEntry.ProductColors.Count == 1)
+                            {
+                                colorEntry = sizeEntry.ProductColors.First();
+                            }
+                            else
+                            {
+                                await transaction.RollbackAsync();
+                                return BadRequest(new
+                                {
+                                    message = "Color is required for this size."
+                                });
+                            }
+                        }
+                    }
+
+                    if (colorEntry == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(new
+                        {
+                            message = "Cannot resolve product variant (size/color)."
+                        });
+                    }
+
+                    if (colorEntry.Quantity < item.Quantity)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest(new 
+                        { 
+                            message = $"Insufficient inventory for product {item.Product.Name} - Variant out of stock. Available: {colorEntry.Quantity}, Required: {item.Quantity}" 
+                        });
+                    }
+                }
+
+                // All validations passed, proceed with inventory deduction
+                var prevPayment = order.PaymentStatus;
+                order.OrderStatus = "Delivered";
+                order.PaymentStatus = "Completed";
+
+                // Deduct inventory for each order item
+                foreach (var item in order.OrderItems)
+                {
+                    if (item.Product == null) continue;
+
+                    // Deduct from Product.StockQuantity (TotalQuantity) using computed total
+                    var totalVariantQty = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors).Sum(pc => pc.Quantity);
+                    var currentTotalQty = item.Product.StockQuantity ?? totalVariantQty;
+                    item.Product.StockQuantity = Math.Max(0, currentTotalQty - item.Quantity);
+
+                    // Update sold count
+                    item.Product.SoldCount = (item.Product.SoldCount ?? 0) + item.Quantity;
+
+                    // Deduct from ProductColor.Quantity and ensure ProductSize consistency
+                    var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                    var colorKey = item.Color?.Trim().ToLowerInvariant();
+
+                    // Resolve variant strictly by ProductVariantId or size/color
+                    ProductColor? colorEntry = null;
+                    ProductSize? sizeEntry = null;
+                    if (item.ProductVariantId.HasValue)
+                    {
+                        colorEntry = item.Product.ProductSizes.SelectMany(ps => ps.ProductColors)
+                            .FirstOrDefault(pc => pc.ProductColorId == item.ProductVariantId.Value);
+
+                        if (colorEntry == null)
+                        {
+                            sizeEntry = item.Product.ProductSizes.FirstOrDefault(ps => ps.ProductSizeId == item.ProductVariantId.Value);
+                            if (sizeEntry != null)
+                            {
+                                if (!string.IsNullOrEmpty(colorKey))
+                                {
+                                    colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                        pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                                }
+                                else if (sizeEntry.ProductColors.Count == 1)
+                                {
+                                    colorEntry = sizeEntry.ProductColors.First();
+                                }
+                            }
+                        }
+                    }
+
+                    if (colorEntry == null && (!string.IsNullOrEmpty(sizeKey) || !string.IsNullOrEmpty(colorKey)))
+                    {
+                        sizeEntry ??= item.Product.ProductSizes.FirstOrDefault(ps =>
+                            (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                            (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+
+                        if (sizeEntry != null)
+                        {
+                            if (!string.IsNullOrEmpty(colorKey))
+                            {
+                                colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                    pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+                            }
+                            else if (sizeEntry.ProductColors.Count == 1)
+                            {
+                                colorEntry = sizeEntry.ProductColors.First();
+                            }
+                        }
+                    }
+
+                    if (colorEntry == null)
+                    {
+                        continue; // Should not happen due to validation above, but guard
+                    }
+
+                    if (colorEntry != null)
+                    {
+                        // Deduct from ProductColor.Quantity
+                        colorEntry.Quantity = Math.Max(0, colorEntry.Quantity - item.Quantity);
+
+                        // Also deduct saleQuantity per color if defined (flash sale per color)
+                        if (colorEntry.SaleQuantity.HasValue && colorEntry.SaleQuantity.Value > 0)
+                        {
+                            var newSaleQty = colorEntry.SaleQuantity.Value - item.Quantity;
+                            colorEntry.SaleQuantity = newSaleQty < 0 ? 0 : newSaleQty;
+                        }
+
+                        // Update FlashSale sold count if product is in an active flash sale
+                        var now = DateTime.UtcNow;
+                        var flashSaleItem = item.Product.FlashSaleItems?
+                            .FirstOrDefault(fsi => fsi.ProductId == item.ProductId
+                                                   && fsi.FlashSale != null
+                                                   && fsi.FlashSale.StartTime <= now
+                                                   && fsi.FlashSale.EndTime >= now);
+                        if (flashSaleItem != null)
+                        {
+                            flashSaleItem.Sold += item.Quantity;
+                            if (flashSaleItem.Sold < 0) flashSaleItem.Sold = 0;
+                            // Optional: cap Sold to saleQuantity
+                            if (flashSaleItem.Sold > flashSaleItem.saleQuantity)
+                                flashSaleItem.Sold = flashSaleItem.saleQuantity;
+                        }
+                    }
+                }
+
+                // Log status change
+                _context.OrderStatusLogs.Add(new OrderStatusLog
+                {
+                    OrderId = orderId,
+                    PreviousStatus = "Shipped",
+                    NewStatus = "Delivered",
+                    PreviousPaymentStatus = prevPayment,
+                    NewPaymentStatus = "Completed",
+                    ActionType = "Confirm Delivery (Shipper)",
+                    Notes = $"Confirmed via QR token by shipper: {user.Name} ({user.Email})",
+                    ChangedByUserId = shipperUserId,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                // Save all changes atomically
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Failed to confirm delivery for OrderId: {OrderId}", orderId);
+                return StatusCode(500, new { message = "Failed to confirm delivery. Please try again.", detail = ex.Message });
+            }
+
+            return Ok(new { message = "Delivery confirmed.", orderId = order.OrderId });
+        }
+
+        public class ConfirmDeliveryDto
+        {
+            public string Token { get; set; } = string.Empty;
         }
 
         // GET /api/orders/{id}
@@ -272,6 +632,8 @@ namespace EcomerceBE.Controllers
                     oi.Quantity,
                     oi.UnitPrice,
                     productName = oi.Product.Name,
+                    size = oi.Size,
+                    color = oi.Color,
                     productImage = oi.Product.Images != null && oi.Product.Images.Any()
                         ? oi.Product.Images.First().ImageUrl
                         : null
@@ -299,10 +661,154 @@ namespace EcomerceBE.Controllers
             [FromBody] UpdateOrderStatusDto dto)
         {
             var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductSizes)
+                            .ThenInclude(ps => ps.Size)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductSizes)
+                            .ThenInclude(ps => ps.ProductColors)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.FlashSaleItems)
+                            .ThenInclude(fsi => fsi.FlashSale)
                 .FirstOrDefaultAsync(o => o.OrderId == id);
 
             if (order == null)
                 return NotFound(new { message = "Order not found." });
+
+            var isDeliveredTarget = !string.IsNullOrWhiteSpace(dto.OrderStatus) &&
+                                    dto.OrderStatus.Trim().Equals("Delivered", StringComparison.OrdinalIgnoreCase);
+            if (isDeliveredTarget)
+            {
+                // Idempotent: already delivered
+                if (order.OrderStatus == "Delivered")
+                {
+                    return Ok(new { message = "Order already delivered.", orderId = order.OrderId });
+                }
+
+                // Only allow transition from Shipped -> Delivered
+                if (order.OrderStatus != "Shipped")
+                {
+                    return BadRequest(new
+                    {
+                        message = $"Only shipped orders can be marked as delivered. Current status: {order.OrderStatus}"
+                    });
+                }
+
+                await using var tx = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    // Validate inventory
+                    foreach (var item in order.OrderItems)
+                    {
+                        if (item.Product == null) continue;
+
+                        var currentTotalQty = item.Product.StockQuantity ?? 0;
+                        if (currentTotalQty < item.Quantity)
+                        {
+                            await tx.RollbackAsync();
+                            return BadRequest(new
+                            {
+                                message = $"Insufficient inventory for product {item.Product.Name} (ID: {item.ProductId}). Available: {currentTotalQty}, Required: {item.Quantity}"
+                            });
+                        }
+
+                        var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                        var colorKey = item.Color?.Trim().ToLowerInvariant();
+                        if (!string.IsNullOrEmpty(sizeKey) && !string.IsNullOrEmpty(colorKey))
+                        {
+                            var sizeEntry = item.Product.ProductSizes.FirstOrDefault(ps =>
+                                (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                                (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+
+                            if (sizeEntry != null)
+                            {
+                                var colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                    pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+
+                                if (colorEntry != null && colorEntry.Quantity < item.Quantity)
+                                {
+                                    await tx.RollbackAsync();
+                                    return BadRequest(new
+                                    {
+                                        message = $"Insufficient inventory for product {item.Product.Name} - Size: {item.Size}, Color: {item.Color}. Available: {colorEntry.Quantity}, Required: {item.Quantity}"
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    var deliveredPreviousOrderStatus = order.OrderStatus;
+                    var deliveredPreviousPaymentStatus = order.PaymentStatus;
+
+                    // Apply status/payment
+                    order.OrderStatus = "Delivered";
+                    order.PaymentStatus = string.IsNullOrWhiteSpace(dto.PaymentStatus)
+                        ? "Completed"
+                        : dto.PaymentStatus.Trim();
+
+                    // Deduct inventory
+                    foreach (var item in order.OrderItems)
+                    {
+                        if (item.Product == null) continue;
+
+                        var currentTotalQty = item.Product.StockQuantity ?? 0;
+                        item.Product.StockQuantity = Math.Max(0, currentTotalQty - item.Quantity);
+
+                        item.Product.SoldCount = (item.Product.SoldCount ?? 0) + item.Quantity;
+
+                        var sizeKey = item.Size?.Trim().ToLowerInvariant();
+                        var colorKey = item.Color?.Trim().ToLowerInvariant();
+                        if (!string.IsNullOrEmpty(sizeKey) && !string.IsNullOrEmpty(colorKey))
+                        {
+                            var sizeEntry = item.Product.ProductSizes.FirstOrDefault(ps =>
+                                (!string.IsNullOrEmpty(ps.CustomValue) && ps.CustomValue.Trim().ToLowerInvariant() == sizeKey) ||
+                                (ps.Size != null && ps.Size.Name.Trim().ToLowerInvariant() == sizeKey));
+
+                            if (sizeEntry != null)
+                            {
+                                var colorEntry = sizeEntry.ProductColors.FirstOrDefault(pc =>
+                                    pc.ColorCode.Trim().ToLowerInvariant() == colorKey);
+
+                                if (colorEntry != null)
+                                {
+                                    colorEntry.Quantity -= item.Quantity;
+                                    if (colorEntry.Quantity < 0) colorEntry.Quantity = 0;
+                                }
+                            }
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await tx.CommitAsync();
+
+                    // Log change
+                    await LogStatusChangeAsync(
+                        order.OrderId,
+                        deliveredPreviousOrderStatus,
+                        order.OrderStatus,
+                        deliveredPreviousPaymentStatus,
+                        order.PaymentStatus,
+                        "status_change",
+                        dto.Notes);
+
+                    return Ok(new
+                    {
+                        message = "Order status updated successfully.",
+                        orderId = order.OrderId,
+                        orderStatus = order.OrderStatus,
+                        paymentStatus = order.PaymentStatus
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await tx.RollbackAsync();
+                    _logger.LogError(ex, "Failed to mark order delivered for OrderId: {OrderId}", order.OrderId);
+                    return StatusCode(500, new { message = "Failed to update order status.", detail = ex.Message });
+                }
+            }
 
             var previousOrderStatus = order.OrderStatus;
             var previousPaymentStatus = order.PaymentStatus;
