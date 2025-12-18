@@ -39,9 +39,9 @@ namespace EcomerceBE.Controllers.ModelAI
                     return Unauthorized(new { message = "User not authenticated" });
                 }
 
-                // Kiểm tra sản phẩm có tồn tại không
+                // Kiểm tra sản phẩm có tồn tại không (không giới hạn IsActive để vẫn log được cho các sản phẩm flash sale / đã ngưng hiển thị)
                 var productExists = await _context.Products
-                    .AnyAsync(p => p.ProductId == request.ProductId && p.IsActive);
+                    .AnyAsync(p => p.ProductId == request.ProductId);
                 
                 if (!productExists)
                 {
@@ -85,9 +85,9 @@ namespace EcomerceBE.Controllers.ModelAI
         {
             try
             {
-                // Kiểm tra sản phẩm có tồn tại không
+                // Kiểm tra sản phẩm có tồn tại không (không giới hạn IsActive)
                 var productExists = await _context.Products
-                    .AnyAsync(p => p.ProductId == request.ProductId && p.IsActive);
+                    .AnyAsync(p => p.ProductId == request.ProductId);
                 
                 if (!productExists)
                 {

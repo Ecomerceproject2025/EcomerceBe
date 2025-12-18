@@ -130,19 +130,27 @@ namespace EcomerceBE.Controllers.ModelAI
 
         /// <summary>
         /// Lấy sản phẩm gợi ý dựa trên lịch sử người dùng (User-Based) - Simplified endpoint
+        /// Trả về empty list nếu user chưa đăng nhập thay vì 401
         /// </summary>
         [HttpGet("user-based")]
-        [Authorize] // Yêu cầu đăng nhập
         public async Task<IActionResult> GetUserBasedRecommendations(
             [FromQuery] int topK = 10)
         {
             try
             {
-                // Lấy UserId từ JWT token
+                // Lấy UserId từ JWT token (nếu có)
                 var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                
+                // Nếu không có token hoặc token không hợp lệ → trả về empty list
                 if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
                 {
-                    return Unauthorized(new { message = "User not authenticated" });
+                    _logger.LogInformation("User not authenticated, returning empty recommendations");
+                    return Ok(new
+                    {
+                        recommendations = new List<RecommendationResponse>(),
+                        recommendationType = "user_based",
+                        totalCount = 0
+                    });
                 }
 
                 var recommendations = await _recommendationService

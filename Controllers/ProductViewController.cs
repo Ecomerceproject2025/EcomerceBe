@@ -251,6 +251,62 @@ namespace EcomerceBE.Controllers
             return Ok(reviews);
         }
 
+        /// <summary>
+        /// Lấy sản phẩm liên quan dựa trên cùng category
+        /// </summary>
+        [HttpGet("GetRelatedProducts/{productId}")]
+        public async Task<IActionResult> GetRelatedProducts(int productId, [FromQuery] int limit = 10)
+        {
+            try
+            {
+                // 1. Lấy thông tin sản phẩm hiện tại để biết CategoryId
+                var currentProduct = await _context.Products
+                    .AsNoTracking()
+                    .Where(p => p.ProductId == productId && p.IsActive)
+                    .Select(p => new { p.CategoryId })
+                    .FirstOrDefaultAsync();
+
+                if (currentProduct == null)
+                {
+                    return Ok(new { data = new List<ExploreProductDto>(), totalCount = 0 });
+                }
+
+                // 2. Lấy các sản phẩm cùng category, loại trừ sản phẩm hiện tại
+                var relatedProducts = await _context.Products
+                    .AsNoTracking()
+                    .Where(p => p.CategoryId == currentProduct.CategoryId 
+                        && p.ProductId != productId 
+                        && p.IsActive
+                        && (p.productType == null || !p.productType.ToLower().Equals("flashsale")))
+                    .OrderByDescending(p => p.ViewCount) // Ưu tiên sản phẩm được xem nhiều
+                    .Take(limit)
+                    .Select(p => new ExploreProductDto
+                    {
+                        Id = p.ProductId,
+                        Name = p.Name,
+                        image = p.Images.Select(img => img.ImageUrl).ToList(),
+                        Price = p.Price,
+                        Description = p.Description ?? "",
+                        StarRatingrating = p.StarRating > 0 
+                            ? p.StarRating 
+                            : (p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0),
+                        ReviewCounts = p.Reviews.Count,
+                        totalquantity = p.StockQuantity
+                    })
+                    .ToListAsync();
+
+                return Ok(new 
+                { 
+                    data = relatedProducts, 
+                    totalCount = relatedProducts.Count 
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error fetching related products", error = ex.Message });
+            }
+        }
+
     } }
 
 

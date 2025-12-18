@@ -46,21 +46,217 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserFilter"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UserFilter"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UserFilter"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UserFilter"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UserFilter"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UserFilter"
               }
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/users": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.AdminCreateUserDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.AdminCreateUserDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.AdminCreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/users/{id}": {
+      "patch": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.AdminUpdateUserDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.AdminUpdateUserDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.AdminUpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/users/{id}/ban": {
+      "patch": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/users/{id}/unban": {
+      "patch": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/users/{id}/reset-password": {
+      "patch": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/recent-buyers": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Admin/order-alerts": {
+      "get": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "take",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -144,6 +340,48 @@
         }
       }
     },
+    "/api/Admin/normal_products/{id}/visibility": {
+      "patch": {
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.UpdateVisibilityDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.UpdateVisibilityDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.AdminController.UpdateVisibilityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Admin/couponsList": {
       "get": {
         "tags": [
@@ -165,17 +403,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterModel"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.RegisterModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterModel"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.RegisterModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterModel"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.RegisterModel"
               }
             }
           }
@@ -196,17 +434,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginModel"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.LoginModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginModel"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.LoginModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginModel"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.LoginModel"
               }
             }
           }
@@ -227,17 +465,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.RefreshRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.RefreshRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/RefreshRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.RefreshRequest"
               }
             }
           }
@@ -258,17 +496,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoogleLoginRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.GoogleLoginRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/GoogleLoginRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.GoogleLoginRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/GoogleLoginRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.GoogleLoginRequest"
               }
             }
           }
@@ -320,17 +558,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/OtpVerifyRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.OtpVerifyRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/OtpVerifyRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.OtpVerifyRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/OtpVerifyRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.OtpVerifyRequest"
               }
             }
           }
@@ -382,17 +620,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ConfirmEmailRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ConfirmEmailRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/ConfirmEmailRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ConfirmEmailRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/ConfirmEmailRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ConfirmEmailRequest"
               }
             }
           }
@@ -413,17 +651,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ChangeProfile"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ChangeProfile"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/ChangeProfile"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ChangeProfile"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/ChangeProfile"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ChangeProfile"
               }
             }
           }
@@ -444,17 +682,83 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckoutOrderDto"
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.CheckoutOrderDto"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckoutOrderDto"
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.CheckoutOrderDto"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/CheckoutOrderDto"
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.CheckoutOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/CheckOut/my-orders": {
+      "get": {
+        "tags": [
+          "CheckOut"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/CheckOut/admin/orders": {
+      "get": {
+        "tags": [
+          "CheckOut"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/CheckOut/admin/orders/{orderId}/status": {
+      "patch": {
+        "tags": [
+          "CheckOut"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.UpdateOrderStatusDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.UpdateOrderStatusDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.UpdateOrderStatusDto"
               }
             }
           }
@@ -479,8 +783,761 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "shippingMethodId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/CheckOut/orders/{orderId}/mark-delivered": {
+      "patch": {
+        "tags": [
+          "CheckOut"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/CheckOut/orders/{orderId}/return": {
+      "patch": {
+        "tags": [
+          "CheckOut"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.ReturnOrderDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.ReturnOrderDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.ReturnOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Contact/send": {
+      "post": {
+        "tags": [
+          "Contact"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.Contact.ContactRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.Contact.ContactRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.Contact.ContactRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Contact/list": {
+      "get": {
+        "tags": [
+          "Contact"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons": {
+      "get": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Coupon"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.CreateCouponDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.CreateCouponDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.CreateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}": {
+      "get": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.UpdateCouponDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.UpdateCouponDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.UpdateCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}/products": {
+      "post": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}/products/{productId}": {
+      "delete": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}/users": {
+      "post": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.AddUsersToCouponDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.AddUsersToCouponDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.CouponController.AddUsersToCouponDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}/users/{userId}": {
+      "delete": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}/shipping-methods": {
+      "post": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/coupons/{id}/shipping-methods/{shippingMethodId}": {
+      "delete": {
+        "tags": [
+          "Coupon"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "shippingMethodId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/monthly-sales": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/statistics": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "monthly"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/products-by-category": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/top-selling-products": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 8
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/metrics": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/recent-orders": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 5
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Embedding/generate-all": {
+      "post": {
+        "tags": [
+          "Embedding"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Embedding/generate/{productId}": {
+      "post": {
+        "tags": [
+          "Embedding"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Embedding/test": {
+      "post": {
+        "tags": [
+          "Embedding"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "string"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -564,6 +1621,324 @@
         }
       }
     },
+    "/api/FlashSale/{id}": {
+      "delete": {
+        "tags": [
+          "FlashSale"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/FlashSale/GetItemByProductId/{productId}": {
+      "get": {
+        "tags": [
+          "FlashSale"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders/{id}/delivery-qr": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "confirmBaseUrl",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders/confirm-delivery": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.ConfirmDeliveryDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.ConfirmDeliveryDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.ConfirmDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders/{id}": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders/{id}/status": {
+      "patch": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.UpdateOrderStatusDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.UpdateOrderStatusDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.UpdateOrderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders/{id}/cancel": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.CancelOrderDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.CancelOrderDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.CancelOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/orders/{id}/refund": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.RefundOrderDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.RefundOrderDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.OrderController.RefundOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Product/category": {
       "get": {
         "tags": [
@@ -631,17 +2006,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProductRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UpdateProductRequest"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProductRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UpdateProductRequest"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateProductRequest"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UpdateProductRequest"
               }
             }
           }
@@ -835,6 +2210,595 @@
         }
       }
     },
+    "/api/Recommendation/get-recommendations": {
+      "post": {
+        "tags": [
+          "Recommendation"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.GetRecommendationsRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.GetRecommendationsRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.GetRecommendationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Recommendation/content-based/{productId}": {
+      "get": {
+        "tags": [
+          "Recommendation"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "topK",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Recommendation/user-based": {
+      "get": {
+        "tags": [
+          "Recommendation"
+        ],
+        "parameters": [
+          {
+            "name": "topK",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review/my/count": {
+      "get": {
+        "tags": [
+          "Review"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review/my": {
+      "get": {
+        "tags": [
+          "Review"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review": {
+      "post": {
+        "tags": [
+          "Review"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ReviewController.CreateReviewDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ReviewController.CreateReviewDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ReviewController.CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review/product/{productId}": {
+      "get": {
+        "tags": [
+          "Review"
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review/order/{orderId}": {
+      "get": {
+        "tags": [
+          "Review"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review/{id}": {
+      "delete": {
+        "tags": [
+          "Review"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Review/{id}/reply": {
+      "post": {
+        "tags": [
+          "Review"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ReviewController.ReplyDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ReviewController.ReplyDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ReviewController.ReplyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/shipping": {
+      "get": {
+        "tags": [
+          "Shipping"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Shipping"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingController.CreateShippingDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingController.CreateShippingDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingController.CreateShippingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/shipping/order/{orderId}": {
+      "get": {
+        "tags": [
+          "Shipping"
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/shipping/{id}": {
+      "patch": {
+        "tags": [
+          "Shipping"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingController.UpdateShippingDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingController.UpdateShippingDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingController.UpdateShippingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Shipping"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/shipping-methods": {
+      "get": {
+        "tags": [
+          "ShippingMethod"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/shipping-methods/admin": {
+      "get": {
+        "tags": [
+          "ShippingMethod"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ShippingMethod"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingMethodController.CreateShippingMethodDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingMethodController.CreateShippingMethodDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingMethodController.CreateShippingMethodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/shipping-methods/admin/{id}": {
+      "get": {
+        "tags": [
+          "ShippingMethod"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "ShippingMethod"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingMethodController.UpdateShippingMethodDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingMethodController.UpdateShippingMethodDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.Controllers.ShippingMethodController.UpdateShippingMethodDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ShippingMethod"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/User/me": {
       "get": {
         "tags": [
@@ -879,17 +2843,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddAddress"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.AddAddress"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/AddAddress"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.AddAddress"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/AddAddress"
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.AddAddress"
               }
             }
           }
@@ -990,24 +2954,142 @@
           }
         }
       }
+    },
+    "/api/User/update-profile": {
+      "put": {
+        "tags": [
+          "User"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UpdateProfileRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UpdateProfileRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.UpdateProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UserBehavior/track": {
+      "post": {
+        "tags": [
+          "UserBehavior"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.UserBehaviorRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.UserBehaviorRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.UserBehaviorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UserBehavior/track-anonymous": {
+      "post": {
+        "tags": [
+          "UserBehavior"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.UserBehaviorRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.UserBehaviorRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EcomerceBE.DTOs.ModelAI.UserBehaviorRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/UserBehavior/history": {
+      "get": {
+        "tags": [
+          "UserBehavior"
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 20
+            }
+          },
+          {
+            "name": "behaviorType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "AddAddress": {
-        "type": "object",
-        "properties": {
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
       "AddProduct": {
         "type": "object",
         "properties": {
@@ -1062,7 +3144,7 @@
           "coupons": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Coupon"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Coupon"
             },
             "nullable": true
           },
@@ -1073,7 +3155,1000 @@
         },
         "additionalProperties": false
       },
-      "Address": {
+      "EcomerceBE.Controllers.AdminController.AdminCreateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.AdminController.AdminUpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.AdminController.UpdateVisibilityDto": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CheckOutController.CheckoutOrderDto": {
+        "required": [
+          "paymentMethod"
+        ],
+        "type": "object",
+        "properties": {
+          "orderNumber": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "addressId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "shippingMethodId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "couponId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "totalAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "discountAmount": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderItems": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EcomerceBE.Controllers.CheckOutController.CheckoutOrderItemDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CheckOutController.CheckoutOrderItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productVariantId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "size": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CheckOutController.ReturnOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CheckOutController.UpdateOrderStatusDto": {
+        "type": "object",
+        "properties": {
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderStatus": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CouponController.AddUsersToCouponDto": {
+        "required": [
+          "userIds"
+        ],
+        "type": "object",
+        "properties": {
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "maxUsagePerUser": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CouponController.CreateCouponDto": {
+        "required": [
+          "code",
+          "discountValue"
+        ],
+        "type": "object",
+        "properties": {
+          "code": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "discountValue": {
+            "type": "number",
+            "format": "double"
+          },
+          "isPercent": {
+            "type": "boolean"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "maxUsage": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "minOrderAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "maxDiscountAmount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "productIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "userIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "shippingMethodIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
+            "nullable": true
+          },
+          "maxUsagePerUser": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.CouponController.UpdateCouponDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "discountValue": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "isPercent": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "endDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "maxUsage": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "minOrderAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "maxDiscountAmount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.OrderController.CancelOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.OrderController.ConfirmDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.OrderController.RefundOrderDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.OrderController.UpdateOrderStatusDto": {
+        "type": "object",
+        "properties": {
+          "orderStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "paymentStatus": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.ReviewController.CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "rating": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "comment": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrls": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.ReviewController.ReplyDto": {
+        "type": "object",
+        "properties": {
+          "replyText": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.ShippingController.CreateShippingDto": {
+        "required": [
+          "orderId"
+        ],
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "trackingNumber": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "carrier": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "shippingMethod": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "shippedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "estimatedDeliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "maxLength": 1000,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.ShippingController.UpdateShippingDto": {
+        "type": "object",
+        "properties": {
+          "trackingNumber": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "carrier": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
+          "shippingMethod": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "shippedDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "estimatedDeliveryDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "deliveredDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "maxLength": 1000,
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.ShippingMethodController.CreateShippingMethodDto": {
+        "required": [
+          "name",
+          "price"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "estimatedDays": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Controllers.ShippingMethodController.UpdateShippingMethodDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "estimatedDays": {
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.AddAddress": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.ChangeProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lname": {
+            "type": "string",
+            "nullable": true
+          },
+          "fname": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentPassWord": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassWord": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Address"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.ConfirmEmailRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.Contact.ContactRequest": {
+        "required": [
+          "email",
+          "message",
+          "name",
+          "phone"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string"
+          },
+          "message": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.GoogleLoginRequest": {
+        "type": "object",
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.LoginModel": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.ModelAI.GetRecommendationsRequest": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "topK": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "recommendationType": {
+            "pattern": "^(content_based|user_based)$",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.ModelAI.UserBehaviorRequest": {
+        "required": [
+          "behaviorType",
+          "productId"
+        ],
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "behaviorType": {
+            "minLength": 1,
+            "pattern": "^(view|add_to_cart|purchase|wishlist)$",
+            "type": "string"
+          },
+          "viewDuration": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "sessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.OtpVerifyRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "code": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.ProductVariantDto": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "$ref": "#/components/schemas/EcomerceBE.DTOs.VariantSizeDto"
+          },
+          "colorHex": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.RefreshRequest": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "refreshToken": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.RegisterModel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.UpdateProductRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "importPrice": {
+            "type": "number",
+            "format": "double"
+          },
+          "productType": {
+            "type": "string",
+            "nullable": true
+          },
+          "salePrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "returnDeliveryDay": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "categoryId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "heroImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "productImages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "listCoupon": {
+            "type": "array",
+            "items": { },
+            "nullable": true
+          },
+          "sizes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EcomerceBE.DTOs.ProductVariantDto"
+            },
+            "nullable": true
+          },
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "currentPassword": {
+            "type": "string",
+            "nullable": true
+          },
+          "newPassword": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.UserFilter": {
+        "type": "object",
+        "properties": {
+          "emailOrName": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "nullable": true
+          },
+          "dateCreate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasRecentOrders": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "recentOrdersDays": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.DTOs.VariantSizeDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Models.Address": {
         "type": "object",
         "properties": {
           "addressId": {
@@ -1122,19 +4197,19 @@
             "type": "boolean"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           },
           "orders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Order"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Order"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "Brand": {
+      "EcomerceBE.Models.Brand": {
         "type": "object",
         "properties": {
           "brandId": {
@@ -1158,7 +4233,7 @@
             "nullable": true
           },
           "categories": {
-            "$ref": "#/components/schemas/Category"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Category"
           },
           "categoryId": {
             "type": "integer",
@@ -1167,7 +4242,7 @@
         },
         "additionalProperties": false
       },
-      "Cart": {
+      "EcomerceBE.Models.Cart": {
         "type": "object",
         "properties": {
           "cartId": {
@@ -1179,19 +4254,19 @@
             "format": "int32"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           },
           "cartItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CartItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.CartItem"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "CartItem": {
+      "EcomerceBE.Models.CartItem": {
         "type": "object",
         "properties": {
           "cartItemId": {
@@ -1216,15 +4291,15 @@
             "format": "int32"
           },
           "cart": {
-            "$ref": "#/components/schemas/Cart"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Cart"
           },
           "product": {
-            "$ref": "#/components/schemas/Product"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
           }
         },
         "additionalProperties": false
       },
-      "Category": {
+      "EcomerceBE.Models.Category": {
         "type": "object",
         "properties": {
           "categoryId": {
@@ -1242,40 +4317,40 @@
             "nullable": true
           },
           "parent": {
-            "$ref": "#/components/schemas/Category"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Category"
           },
           "children": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Category"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Category"
             },
             "nullable": true
           },
           "products": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Product"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Product"
             },
             "nullable": true
           },
           "categorySizes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CategorySize"
+              "$ref": "#/components/schemas/EcomerceBE.Models.CategorySize"
             },
             "nullable": true
           },
           "brands": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Brand"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Brand"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "CategorySize": {
+      "EcomerceBE.Models.CategorySize": {
         "type": "object",
         "properties": {
           "categoryId": {
@@ -1283,128 +4358,19 @@
             "format": "int32"
           },
           "category": {
-            "$ref": "#/components/schemas/Category"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Category"
           },
           "sizeId": {
             "type": "integer",
             "format": "int32"
           },
           "size": {
-            "$ref": "#/components/schemas/Size"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Size"
           }
         },
         "additionalProperties": false
       },
-      "ChangeProfile": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "lname": {
-            "type": "string",
-            "nullable": true
-          },
-          "fname": {
-            "type": "string",
-            "nullable": true
-          },
-          "currentPassWord": {
-            "type": "string",
-            "nullable": true
-          },
-          "newPassWord": {
-            "type": "string",
-            "nullable": true
-          },
-          "avatar": {
-            "type": "string",
-            "nullable": true
-          },
-          "address": {
-            "$ref": "#/components/schemas/Address"
-          }
-        },
-        "additionalProperties": false
-      },
-      "CheckoutOrderDto": {
-        "required": [
-          "paymentMethod"
-        ],
-        "type": "object",
-        "properties": {
-          "addressId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "couponId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "paymentMethod": {
-            "maxLength": 255,
-            "minLength": 1,
-            "type": "string"
-          },
-          "totalAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "discountAmount": {
-            "type": "number",
-            "format": "double"
-          },
-          "orderItems": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CheckoutOrderItemDto"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "CheckoutOrderItemDto": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productVariantId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "unitPrice": {
-            "type": "number",
-            "format": "double"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ConfirmEmailRequest": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "token": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Contact": {
+      "EcomerceBE.Models.Contact": {
         "type": "object",
         "properties": {
           "contactId": {
@@ -1429,12 +4395,12 @@
             "format": "date-time"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           }
         },
         "additionalProperties": false
       },
-      "Coupon": {
+      "EcomerceBE.Models.Coupon": {
         "type": "object",
         "properties": {
           "couponId": {
@@ -1447,6 +4413,11 @@
             "nullable": true
           },
           "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "maxLength": 50,
             "type": "string",
             "nullable": true
           },
@@ -1478,10 +4449,20 @@
           "isActive": {
             "type": "boolean"
           },
+          "minOrderAmount": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "maxDiscountAmount": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "orders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Order"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Order"
             },
             "nullable": true
           },
@@ -1498,11 +4479,18 @@
               "$ref": "#/components/schemas/UserCoupon"
             },
             "nullable": true
+          },
+          "shippingMethodCoupons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShippingMethodCoupon"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "FlashSale": {
+      "EcomerceBE.Models.FlashSale": {
         "required": [
           "endTime",
           "name",
@@ -1530,40 +4518,14 @@
           "flashSaleItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FlashSaleItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.FlashSaleItem"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "FlashSaleCreateDTO": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "day": {
-            "type": "string",
-            "nullable": true
-          },
-          "hours": {
-            "type": "string",
-            "nullable": true
-          },
-          "minutes": {
-            "type": "string",
-            "nullable": true
-          },
-          "seconds": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "FlashSaleItem": {
+      "EcomerceBE.Models.FlashSaleItem": {
         "type": "object",
         "properties": {
           "flashSaleItemId": {
@@ -1575,14 +4537,14 @@
             "format": "int32"
           },
           "product": {
-            "$ref": "#/components/schemas/Product"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
           },
           "productId": {
             "type": "integer",
             "format": "int32"
           },
           "flashSale": {
-            "$ref": "#/components/schemas/FlashSale"
+            "$ref": "#/components/schemas/EcomerceBE.Models.FlashSale"
           },
           "discountPrice": {
             "type": "number",
@@ -1599,36 +4561,17 @@
         },
         "additionalProperties": false
       },
-      "GoogleLoginRequest": {
-        "type": "object",
-        "properties": {
-          "idToken": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "LoginModel": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "password": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Order": {
+      "EcomerceBE.Models.Order": {
         "type": "object",
         "properties": {
           "orderId": {
             "type": "integer",
             "format": "int32"
+          },
+          "orderNumber": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
           },
           "userId": {
             "type": "integer",
@@ -1638,6 +4581,15 @@
             "type": "integer",
             "format": "int32",
             "nullable": true
+          },
+          "shippingMethodId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "shippingCost": {
+            "type": "number",
+            "format": "double"
           },
           "totalAmount": {
             "type": "number",
@@ -1672,25 +4624,28 @@
             "format": "date-time"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           },
           "address": {
-            "$ref": "#/components/schemas/Address"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Address"
+          },
+          "shippingMethod": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.ShippingMethod"
           },
           "coupon": {
-            "$ref": "#/components/schemas/Coupon"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Coupon"
           },
           "orderItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OrderItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.OrderItem"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "OrderItem": {
+      "EcomerceBE.Models.OrderItem": {
         "type": "object",
         "properties": {
           "orderItemId": {
@@ -1718,34 +4673,24 @@
             "type": "number",
             "format": "double"
           },
+          "size": {
+            "type": "string",
+            "nullable": true
+          },
+          "color": {
+            "type": "string",
+            "nullable": true
+          },
           "order": {
-            "$ref": "#/components/schemas/Order"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Order"
           },
           "product": {
-            "$ref": "#/components/schemas/Product"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
           }
         },
         "additionalProperties": false
       },
-      "OtpVerifyRequest": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "code": {
-            "type": "string",
-            "nullable": true
-          },
-          "newPassword": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Product": {
+      "EcomerceBE.Models.Product": {
         "required": [
           "description",
           "name"
@@ -1817,7 +4762,7 @@
             "nullable": true
           },
           "category": {
-            "$ref": "#/components/schemas/Category"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Category"
           },
           "isActive": {
             "type": "boolean"
@@ -1856,7 +4801,7 @@
           "images": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ProductImage"
+              "$ref": "#/components/schemas/EcomerceBE.Models.ProductImage"
             },
             "nullable": true
           },
@@ -1884,87 +4829,42 @@
           "reviews": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Review"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Review"
             },
             "nullable": true
           },
           "cartItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CartItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.CartItem"
             },
             "nullable": true
           },
           "orderItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OrderItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.OrderItem"
             },
             "nullable": true
           },
           "flashSaleItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/FlashSaleItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.FlashSaleItem"
             },
             "nullable": true
           },
           "wishlistItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WishListItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.WishListItem"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "ProductColor": {
-        "type": "object",
-        "properties": {
-          "productColorId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "colorCode": {
-            "type": "string",
-            "nullable": true
-          },
-          "productSizeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productSize": {
-            "$ref": "#/components/schemas/ProductSize"
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductCoupon": {
-        "type": "object",
-        "properties": {
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "product": {
-            "$ref": "#/components/schemas/Product"
-          },
-          "couponId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "coupon": {
-            "$ref": "#/components/schemas/Coupon"
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductImage": {
+      "EcomerceBE.Models.ProductImage": {
         "type": "object",
         "properties": {
           "productImageId": {
@@ -1976,7 +4876,7 @@
             "nullable": true
           },
           "product": {
-            "$ref": "#/components/schemas/Product"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
           },
           "productId": {
             "type": "integer",
@@ -1985,92 +4885,7 @@
         },
         "additionalProperties": false
       },
-      "ProductSize": {
-        "type": "object",
-        "properties": {
-          "productSizeId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "product": {
-            "$ref": "#/components/schemas/Product"
-          },
-          "sizeId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "size": {
-            "$ref": "#/components/schemas/Size"
-          },
-          "customValue": {
-            "type": "string",
-            "nullable": true
-          },
-          "productColors": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductColor"
-            },
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "ProductVariantDto": {
-        "type": "object",
-        "properties": {
-          "size": {
-            "$ref": "#/components/schemas/VariantSizeDto"
-          },
-          "colorHex": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "RefreshRequest": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "nullable": true
-          },
-          "refreshToken": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "RegisterModel": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "nullable": true
-          },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
-          "password": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "Review": {
+      "EcomerceBE.Models.Review": {
         "type": "object",
         "properties": {
           "reviewId": {
@@ -2085,6 +4900,11 @@
             "type": "integer",
             "format": "int32"
           },
+          "orderItemId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "rating": {
             "type": "integer",
             "format": "int32"
@@ -2098,15 +4918,138 @@
             "format": "date-time"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           },
           "product": {
-            "$ref": "#/components/schemas/Product"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
+          },
+          "orderItem": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.OrderItem"
+          },
+          "reviewImages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EcomerceBE.Models.ReviewImage"
+            },
+            "nullable": true
+          },
+          "replies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EcomerceBE.Models.ReviewReply"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "Size": {
+      "EcomerceBE.Models.ReviewImage": {
+        "type": "object",
+        "properties": {
+          "reviewImageId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reviewId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "review": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Review"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Models.ReviewReply": {
+        "type": "object",
+        "properties": {
+          "reviewReplyId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reviewId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "replyText": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "review": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Review"
+          },
+          "user": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Models.ShippingMethod": {
+        "required": [
+          "name",
+          "price"
+        ],
+        "type": "object",
+        "properties": {
+          "shippingMethodId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number",
+            "format": "double"
+          },
+          "estimatedDays": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "EcomerceBE.Models.Size": {
         "type": "object",
         "properties": {
           "sizeId": {
@@ -2125,7 +5068,7 @@
           "categorySizes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/CategorySize"
+              "$ref": "#/components/schemas/EcomerceBE.Models.CategorySize"
             },
             "nullable": true
           },
@@ -2139,101 +5082,7 @@
         },
         "additionalProperties": false
       },
-      "SizeVm": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "UpdateProductRequest": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "nullable": true
-          },
-          "title": {
-            "type": "string",
-            "nullable": true
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "price": {
-            "type": "number",
-            "format": "double"
-          },
-          "importPrice": {
-            "type": "number",
-            "format": "double"
-          },
-          "productType": {
-            "type": "string",
-            "nullable": true
-          },
-          "salePrice": {
-            "type": "number",
-            "format": "double",
-            "nullable": true
-          },
-          "returnDeliveryDay": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "categoryId": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          },
-          "category": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "heroImage": {
-            "type": "string",
-            "nullable": true
-          },
-          "productImages": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "nullable": true
-          },
-          "listCoupon": {
-            "type": "array",
-            "items": { },
-            "nullable": true
-          },
-          "sizes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductVariantDto"
-            },
-            "nullable": true
-          },
-          "saleQuantity": {
-            "type": "integer",
-            "format": "int32",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "User": {
+      "EcomerceBE.Models.User": {
         "type": "object",
         "properties": {
           "id": {
@@ -2274,47 +5123,47 @@
           "addresses": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Address"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Address"
             },
             "nullable": true
           },
           "carts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Cart"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Cart"
             },
             "nullable": true
           },
           "orders": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Order"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Order"
             },
             "nullable": true
           },
           "reviews": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Review"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Review"
             },
             "nullable": true
           },
           "wishlists": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WishList"
+              "$ref": "#/components/schemas/EcomerceBE.Models.WishList"
             },
             "nullable": true
           },
           "contacts": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/Contact"
+              "$ref": "#/components/schemas/EcomerceBE.Models.Contact"
             },
             "nullable": true
           },
           "wallet": {
-            "$ref": "#/components/schemas/Wallet"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Wallet"
           },
           "refreshToken": {
             "type": "string",
@@ -2344,97 +5193,7 @@
         },
         "additionalProperties": false
       },
-      "UserCoupon": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "user": {
-            "$ref": "#/components/schemas/User"
-          },
-          "couponId": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "coupon": {
-            "$ref": "#/components/schemas/Coupon"
-          },
-          "usedCount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "UserFilter": {
-        "type": "object",
-        "properties": {
-          "emailOrName": {
-            "type": "string",
-            "nullable": true
-          },
-          "status": {
-            "type": "string",
-            "nullable": true
-          },
-          "role": {
-            "type": "string",
-            "nullable": true
-          },
-          "dateCreate": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true
-          },
-          "phone": {
-            "type": "string",
-            "nullable": true
-          },
-          "page": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "VariantSizeDto": {
-        "type": "object",
-        "properties": {
-          "type": {
-            "type": "string",
-            "nullable": true
-          },
-          "value": {
-            "type": "string",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false
-      },
-      "VariantVm": {
-        "type": "object",
-        "properties": {
-          "size": {
-            "$ref": "#/components/schemas/SizeVm"
-          },
-          "colorHex": {
-            "type": "string",
-            "nullable": true
-          },
-          "quantity": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "additionalProperties": false
-      },
-      "Wallet": {
+      "EcomerceBE.Models.Wallet": {
         "type": "object",
         "properties": {
           "walletId": {
@@ -2450,19 +5209,19 @@
             "format": "double"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           },
           "walletItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WalletItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.WalletItem"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "WalletItem": {
+      "EcomerceBE.Models.WalletItem": {
         "type": "object",
         "properties": {
           "walletItemId": {
@@ -2486,12 +5245,12 @@
             "format": "date-time"
           },
           "wallet": {
-            "$ref": "#/components/schemas/Wallet"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Wallet"
           }
         },
         "additionalProperties": false
       },
-      "WishList": {
+      "EcomerceBE.Models.WishList": {
         "type": "object",
         "properties": {
           "wishlistId": {
@@ -2503,19 +5262,19 @@
             "format": "int32"
           },
           "user": {
-            "$ref": "#/components/schemas/User"
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
           },
           "wishlistItems": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WishListItem"
+              "$ref": "#/components/schemas/EcomerceBE.Models.WishListItem"
             },
             "nullable": true
           }
         },
         "additionalProperties": false
       },
-      "WishListItem": {
+      "EcomerceBE.Models.WishListItem": {
         "type": "object",
         "properties": {
           "wishlistItemId": {
@@ -2535,14 +5294,224 @@
             "format": "date-time"
           },
           "wishlist": {
-            "$ref": "#/components/schemas/WishList"
+            "$ref": "#/components/schemas/EcomerceBE.Models.WishList"
           },
           "product": {
-            "$ref": "#/components/schemas/Product"
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FlashSaleCreateDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "day": {
+            "type": "string",
+            "nullable": true
+          },
+          "hours": {
+            "type": "string",
+            "nullable": true
+          },
+          "minutes": {
+            "type": "string",
+            "nullable": true
+          },
+          "seconds": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductColor": {
+        "type": "object",
+        "properties": {
+          "productColorId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "colorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "productSizeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productSize": {
+            "$ref": "#/components/schemas/ProductSize"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductCoupon": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
+          },
+          "couponId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coupon": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Coupon"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductSize": {
+        "type": "object",
+        "properties": {
+          "productSizeId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "product": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Product"
+          },
+          "sizeId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "size": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Size"
+          },
+          "customValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "productColors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductColor"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ShippingMethodCoupon": {
+        "type": "object",
+        "properties": {
+          "shippingMethodId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "shippingMethod": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.ShippingMethod"
+          },
+          "couponId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coupon": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Coupon"
+          }
+        },
+        "additionalProperties": false
+      },
+      "SizeVm": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UserCoupon": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "user": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.User"
+          },
+          "couponId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "coupon": {
+            "$ref": "#/components/schemas/EcomerceBE.Models.Coupon"
+          },
+          "usedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "maxUsagePerUser": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "VariantVm": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "$ref": "#/components/schemas/SizeVm"
+          },
+          "colorHex": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "saleQuantity": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Nhập access token (không cần gõ 'Bearer ')",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

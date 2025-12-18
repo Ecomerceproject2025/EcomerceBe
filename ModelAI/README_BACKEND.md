@@ -1,6 +1,7 @@
 # ModelAI - Hướng dẫn Backend Implementation
 
 ## 📋 Mục lục
+
 1. [Tổng quan](#tổng-quan)
 2. [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
 3. [Setup và Cấu hình](#setup-và-cấu-hình)
@@ -15,10 +16,12 @@
 ## Tổng quan
 
 Hệ thống ModelAI sử dụng **Content-Based Filtering** với mô hình BERT để gợi ý sản phẩm liên quan dựa trên:
+
 - Hành vi người dùng (xem, mua, thêm vào giỏ hàng)
 - Độ tương đồng giữa các sản phẩm (dựa trên embedding vectors)
 
 ### Công nghệ sử dụng
+
 - **Backend**: ASP.NET Core 9, C#
 - **ORM**: Entity Framework Core
 - **Database**: MySQL
@@ -108,13 +111,60 @@ Hệ thống ModelAI sử dụng **Content-Based Filtering** với mô hình BER
 
 ## Setup và Cấu hình
 
+### Luồng FE ↔ BE ↔ AI (tóm tắt kết nối)
+
+- **FE → BE**
+
+  - Base URL FE: `NEXT_PUBLIC_API_URL = http://localhost:5099/api`
+  - Track hành vi:
+    - Auth: `POST /UserBehavior/track`
+    - Anonymous: `POST /UserBehavior/track-anonymous`
+  - Gợi ý:
+    - Content-based: `GET /Recommendation/content-based/{productId}?topK=10`
+    - User-based: `GET /Recommendation/user-based?topK=10`
+
+- **BE → AI**
+
+  - `appsettings.json`
+    ```json
+    "AIModel": {
+      "ApiUrl": "http://localhost:8000",
+      "ApiKey": ""
+    }
+    ```
+  - `EmbeddingService` / `RecommendationService` gọi AI Model API (FastAPI) qua `ApiUrl`.
+
+- **Chạy dịch vụ**
+
+  - AI server: `.\.venv\Scripts\python.exe .\ModelAI\main.py` (docs: `http://localhost:8000/docs`)
+  - BE server: `dotnet run` (swagger: `http://localhost:5099/swagger`)
+
+- **Vị trí mã nguồn**
+
+  - FE:
+    - Hooks tracking/recommend: `src/hooks/useUserBehavior.ts`, `src/hooks/useRecommendations.ts`
+    - UI gợi ý: Product Detail block (content-based), Home `RecommendedForYou` (user-based) `src/components/homePage/recommend/`
+  - BE:
+    - Controllers: `Controllers/ModelAI/UserBehaviorController.cs`, `Controllers/ModelAI/RecommendationController.cs`
+    - Services: `Service/ModelAI/EmbeddingService.cs`, `Service/ModelAI/RecommendationService.cs`
+    - Background: `Background/EmbeddingGenerationService.cs`
+  - AI (Python): `ModelAI/main.py`
+
+- **Luồng runtime nhanh**
+  1. User mở Product Detail → FE auto track view, gọi content-based recommend.
+  2. User add to cart/purchase → FE track → BE lưu log.
+  3. User mở Home (đã login) → FE gọi user-based recommend.
+  4. BE nếu thiếu embedding sẽ gọi AI sinh embedding; nếu có sẵn thì trả gợi ý ngay.
+
 ### 1. Kiểm tra Models và DbContext
 
 Đảm bảo các Models đã được tạo:
+
 - ✅ `Models/ModelAI/UserBehaviorLog.cs`
 - ✅ `Models/ModelAI/ProductEmbedding.cs`
 
 Đảm bảo `AppDbContext.cs` đã có:
+
 ```csharp
 public DbSet<UserBehaviorLog> UserBehaviorLogs { get; set; }
 public DbSet<ProductEmbedding> ProductEmbeddings { get; set; }
@@ -133,6 +183,7 @@ dotnet ef database update
 ```
 
 **Kiểm tra migration:**
+
 - Mở file migration trong `Migrations/` folder
 - Đảm bảo có tạo 2 bảng: `UserBehaviorLogs` và `ProductEmbeddings`
 - Đảm bảo có các indexes đã được định nghĩa trong `AppDbContext.OnModelCreating`
@@ -140,6 +191,7 @@ dotnet ef database update
 ### 3. Kiểm tra Indexes
 
 Sau khi migration, kiểm tra các indexes đã được tạo:
+
 - `IX_UserBehaviorLogs_UserId_CreatedAt`
 - `IX_UserBehaviorLogs_ProductId_BehaviorType`
 - `IX_UserBehaviorLogs_SessionId`
@@ -148,6 +200,7 @@ Sau khi migration, kiểm tra các indexes đã được tạo:
 ### 4. Cấu hình trong Program.cs
 
 Đảm bảo các services đã được đăng ký:
+
 ```csharp
 // ✅ ModelAI Services
 builder.Services.AddHttpClient(); // For EmbeddingService to call AI Model API
@@ -158,6 +211,7 @@ builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 ### 5. Cấu hình AI Model API (Optional)
 
 Trong `appsettings.json`, thêm cấu hình cho AI Model API:
+
 ```json
 {
   "AIModel": {
@@ -166,7 +220,8 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 }
 ```
 
-**Lưu ý:** 
+**Lưu ý:**
+
 - Nếu không có AI Model API, hệ thống sẽ sử dụng mock embedding (để test)
 - Trong production, nên có AI Model API riêng hoặc sử dụng ML.NET với ONNX model
 
@@ -176,37 +231,39 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 
 ### Bảng: `UserBehaviorLogs`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `UserBehaviorLogId` | INT (PK) | ID tự động tăng |
-| `UserId` | INT (FK, nullable) | ID người dùng (null nếu anonymous) |
-| `ProductId` | INT (FK) | ID sản phẩm |
-| `BehaviorType` | VARCHAR(50) | "view", "add_to_cart", "purchase", "wishlist" |
-| `ViewDuration` | INT (nullable) | Thời gian xem (giây) - chỉ cho "view" |
-| `SessionId` | VARCHAR(255) | Session ID để nhóm hành vi |
-| `IpAddress` | VARCHAR(45) | IP của người dùng |
-| `UserAgent` | VARCHAR(500) | Browser/device info |
-| `Metadata` | TEXT (nullable) | JSON string chứa metadata bổ sung |
-| `CreatedAt` | DATETIME | Thời gian ghi nhận |
+| Column              | Type               | Description                                   |
+| ------------------- | ------------------ | --------------------------------------------- |
+| `UserBehaviorLogId` | INT (PK)           | ID tự động tăng                               |
+| `UserId`            | INT (FK, nullable) | ID người dùng (null nếu anonymous)            |
+| `ProductId`         | INT (FK)           | ID sản phẩm                                   |
+| `BehaviorType`      | VARCHAR(50)        | "view", "add_to_cart", "purchase", "wishlist" |
+| `ViewDuration`      | INT (nullable)     | Thời gian xem (giây) - chỉ cho "view"         |
+| `SessionId`         | VARCHAR(255)       | Session ID để nhóm hành vi                    |
+| `IpAddress`         | VARCHAR(45)        | IP của người dùng                             |
+| `UserAgent`         | VARCHAR(500)       | Browser/device info                           |
+| `Metadata`          | TEXT (nullable)    | JSON string chứa metadata bổ sung             |
+| `CreatedAt`         | DATETIME           | Thời gian ghi nhận                            |
 
 **Relationships:**
+
 - `UserId` → `Users.Id` (nullable)
 - `ProductId` → `Products.ProductId`
 
 ### Bảng: `ProductEmbeddings`
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `ProductEmbeddingId` | INT (PK) | ID tự động tăng |
-| `ProductId` | INT (FK, unique) | ID sản phẩm (1-1 với Product) |
-| `EmbeddingVector` | LONGTEXT | JSON array của floats: `[0.123, 0.456, ...]` |
-| `EmbeddingDimension` | INT | Số chiều vector (384, 768, etc.) |
-| `ModelName` | VARCHAR(255) | Tên mô hình (ví dụ: "sentence-transformers/all-MiniLM-L6-v2") |
-| `ModelVersion` | VARCHAR(50) | Version mô hình |
-| `CreatedAt` | DATETIME | Thời gian tạo embedding |
-| `UpdatedAt` | DATETIME | Thời gian cập nhật embedding |
+| Column               | Type             | Description                                                   |
+| -------------------- | ---------------- | ------------------------------------------------------------- |
+| `ProductEmbeddingId` | INT (PK)         | ID tự động tăng                                               |
+| `ProductId`          | INT (FK, unique) | ID sản phẩm (1-1 với Product)                                 |
+| `EmbeddingVector`    | LONGTEXT         | JSON array của floats: `[0.123, 0.456, ...]`                  |
+| `EmbeddingDimension` | INT              | Số chiều vector (384, 768, etc.)                              |
+| `ModelName`          | VARCHAR(255)     | Tên mô hình (ví dụ: "sentence-transformers/all-MiniLM-L6-v2") |
+| `ModelVersion`       | VARCHAR(50)      | Version mô hình                                               |
+| `CreatedAt`          | DATETIME         | Thời gian tạo embedding                                       |
+| `UpdatedAt`          | DATETIME         | Thời gian cập nhật embedding                                  |
 
 **Relationships:**
+
 - `ProductId` → `Products.ProductId` (unique, 1-1)
 
 ---
@@ -220,17 +277,19 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Authentication:** Required (JWT Token)
 
 **Request Body:**
+
 ```json
 {
   "productId": 123,
-  "behaviorType": "view",  // "view" | "add_to_cart" | "purchase" | "wishlist"
-  "viewDuration": 30,       // Optional: thời gian xem (giây) - chỉ cho "view"
-  "sessionId": "abc123",   // Optional: session ID
-  "metadata": "{\"referrer\": \"search\", \"category\": \"electronics\"}"  // Optional: JSON string
+  "behaviorType": "view", // "view" | "add_to_cart" | "purchase" | "wishlist"
+  "viewDuration": 30, // Optional: thời gian xem (giây) - chỉ cho "view"
+  "sessionId": "abc123", // Optional: session ID
+  "metadata": "{\"referrer\": \"search\", \"category\": \"electronics\"}" // Optional: JSON string
 }
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Behavior tracked successfully",
@@ -239,6 +298,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 ```
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `400 Bad Request`: Dữ liệu không hợp lệ
 - `401 Unauthorized`: Chưa đăng nhập
@@ -258,6 +318,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Response:** (giống như `/track`)
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `400 Bad Request`: Dữ liệu không hợp lệ
 - `404 Not Found`: Sản phẩm không tồn tại
@@ -272,11 +333,13 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Authentication:** Required (JWT Token)
 
 **Query Parameters:**
+
 - `page` (int, default: 1): Số trang
 - `pageSize` (int, default: 20): Số lượng items mỗi trang
 - `behaviorType` (string, optional): Lọc theo loại hành vi ("view", "add_to_cart", "purchase", "wishlist")
 
 **Response:**
+
 ```json
 {
   "data": [
@@ -297,6 +360,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 ```
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `401 Unauthorized`: Chưa đăng nhập
 - `500 Internal Server Error`: Lỗi server
@@ -310,16 +374,18 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Authentication:** Optional (cần cho user-based recommendations)
 
 **Request Body:**
+
 ```json
 {
-  "productId": 123,              // Optional: ID sản phẩm hiện tại (cho content-based)
-  "userId": 456,                  // Optional: ID người dùng (cho user-based)
-  "topK": 10,                     // Số lượng sản phẩm gợi ý (default: 10)
-  "recommendationType": "content_based"  // "content_based" | "user_based"
+  "productId": 123, // Optional: ID sản phẩm hiện tại (cho content-based)
+  "userId": 456, // Optional: ID người dùng (cho user-based)
+  "topK": 10, // Số lượng sản phẩm gợi ý (default: 10)
+  "recommendationType": "content_based" // "content_based" | "user_based"
 }
 ```
 
 **Response:**
+
 ```json
 {
   "recommendations": [
@@ -339,6 +405,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 ```
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `400 Bad Request`: Dữ liệu không hợp lệ
 - `404 Not Found`: Sản phẩm không tồn tại hoặc chưa có embedding
@@ -353,6 +420,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Authentication:** Not required
 
 **Query Parameters:**
+
 - `topK` (int, default: 10): Số lượng sản phẩm gợi ý
 
 **Response:** (giống như `/get-recommendations`)
@@ -366,6 +434,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Authentication:** Required (JWT Token)
 
 **Query Parameters:**
+
 - `topK` (int, default: 10): Số lượng sản phẩm gợi ý
 
 **Response:** (giống như `/get-recommendations`)
@@ -381,6 +450,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Description:** Generate embeddings cho tất cả sản phẩm chưa có embedding
 
 **Response:**
+
 ```json
 {
   "message": "Successfully generated embeddings for 50 products",
@@ -389,6 +459,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 ```
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `401 Unauthorized`: Chưa đăng nhập hoặc không phải Admin
 - `500 Internal Server Error`: Lỗi server
@@ -404,6 +475,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Description:** Generate hoặc update embedding cho một sản phẩm cụ thể
 
 **Response:**
+
 ```json
 {
   "message": "Successfully generated embedding for product 123",
@@ -412,6 +484,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 ```
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `401 Unauthorized`: Chưa đăng nhập hoặc không phải Admin
 - `404 Not Found`: Sản phẩm không tồn tại
@@ -426,11 +499,13 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 **Authentication:** Required (JWT Token, Admin role)
 
 **Request Body:**
+
 ```json
 "iPhone 15 Pro Max - Flagship smartphone with A17 chip"
 ```
 
 **Response:**
+
 ```json
 {
   "message": "Embedding generated successfully",
@@ -441,6 +516,7 @@ Trong `appsettings.json`, thêm cấu hình cho AI Model API:
 ```
 
 **Status Codes:**
+
 - `200 OK`: Thành công
 - `400 Bad Request`: Text không được để trống
 - `401 Unauthorized`: Chưa đăng nhập hoặc không phải Admin
@@ -467,12 +543,14 @@ Tạo service để generate embeddings từ BERT model:
 **File:** `Service/ModelAI/EmbeddingService.cs` - ✅ Đã implement
 
 **Tính năng:**
+
 - Gọi AI Model API qua HTTP (nếu có `AIModel:ApiUrl` trong appsettings.json)
 - Fallback về mock embedding nếu không có API (để test)
 - Generate embeddings cho tất cả sản phẩm chưa có embedding
 - Update embedding cho sản phẩm cụ thể
 
 **Lưu ý:**
+
 - Có thể sử dụng Python FastAPI service để host BERT model
 - Hoặc sử dụng ML.NET với ONNX model
 - Hoặc gọi external API (Hugging Face Inference API)
@@ -487,6 +565,7 @@ Tạo service để tính similarity và trả về recommendations:
 **File:** `Service/ModelAI/RecommendationService.cs` - ✅ Đã implement
 
 **Tính năng:**
+
 - **Content-Based Recommendations**: Gợi ý sản phẩm tương đồng với sản phẩm hiện tại
 - **User-Based Recommendations**: Gợi ý sản phẩm dựa trên lịch sử người dùng
 - Tính cosine similarity giữa embedding vectors
@@ -500,6 +579,7 @@ Tạo service để tính similarity và trả về recommendations:
 **File:** `Controllers/ModelAI/RecommendationController.cs` - ✅ Đã implement
 
 **Endpoints:**
+
 - `POST /api/Recommendation/get-recommendations` - Lấy recommendations (content-based hoặc user-based)
 - `GET /api/Recommendation/content-based/{productId}` - Simplified endpoint cho content-based
 - `GET /api/Recommendation/user-based` - Simplified endpoint cho user-based (yêu cầu authentication)
@@ -522,6 +602,7 @@ builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 **File:** `Background/EmbeddingGenerationService.cs` - ✅ Đã tạo
 
 **Tính năng:**
+
 - Tự động chạy mỗi 6 giờ để generate embeddings cho sản phẩm mới
 - Chạy ngay khi ứng dụng khởi động (lần đầu)
 - Đã được đăng ký trong `Program.cs`
@@ -595,6 +676,7 @@ curl -X GET "http://localhost:5000/api/Recommendation/user-based?topK=10" \
 **Nguyên nhân:** Sản phẩm chưa có embedding vector.
 
 **Giải pháp:**
+
 1. Chạy background job để generate embeddings
 2. Hoặc gọi API để generate embedding cho sản phẩm cụ thể
 
@@ -603,6 +685,7 @@ curl -X GET "http://localhost:5000/api/Recommendation/user-based?topK=10" \
 **Nguyên nhân:** Embedding vector không đúng format JSON array.
 
 **Giải pháp:**
+
 - Kiểm tra format của `EmbeddingVector` trong database
 - Đảm bảo là JSON array: `[0.123, 0.456, ...]`
 
@@ -611,6 +694,7 @@ curl -X GET "http://localhost:5000/api/Recommendation/user-based?topK=10" \
 **Nguyên nhân:** Số lượng sản phẩm quá lớn, tính similarity cho tất cả sản phẩm.
 
 **Giải pháp:**
+
 1. Sử dụng vector database (Pinecone, Weaviate, Qdrant) nếu >100k sản phẩm
 2. Hoặc cache kết quả recommendations
 3. Hoặc giới hạn số lượng sản phẩm tính similarity (ví dụ: chỉ tính cho sản phẩm cùng category)
@@ -618,6 +702,7 @@ curl -X GET "http://localhost:5000/api/Recommendation/user-based?topK=10" \
 ### Lỗi: Migration không chạy
 
 **Giải pháp:**
+
 ```bash
 # Xóa migration cũ (nếu có)
 dotnet ef migrations remove
@@ -647,9 +732,11 @@ dotnet ef database update
    dotnet ef database update
    ```
 10. ⏳ **Generate Embeddings lần đầu** - Gọi API để generate embeddings:
-   ```bash
-   POST /api/Embedding/generate-all (Admin only)
-   ```
+
+```bash
+POST /api/Embedding/generate-all (Admin only)
+```
+
 11. ⏳ **Testing** - Test tất cả endpoints
 12. ⏳ **Frontend Integration** - Tích hợp vào frontend
 13. ⏳ **AI Model API** - Setup Python FastAPI service để host BERT model (nếu chưa có)
@@ -668,4 +755,3 @@ dotnet ef database update
 ## Liên hệ
 
 Nếu có vấn đề hoặc câu hỏi, vui lòng liên hệ team phát triển.
-

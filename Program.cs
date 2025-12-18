@@ -10,6 +10,7 @@ using System.Text;
 using OfficeOpenXml;
 using EcomerceBE.Service.flashSale;
 using EcomerceBE.Service.ModelAI;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,7 +67,38 @@ builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Dùng FullName để tránh trùng schemaId cho các DTO lồng nhau (OrderController+UpdateOrderStatusDto vs CheckOutController+UpdateOrderStatusDto)
+    c.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+
+    // Cấu hình Bearer token cho Swagger UI
+    // Sử dụng chuẩn HTTP Bearer để Swagger tự thêm tiền tố "Bearer "
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Nhập access token (không cần gõ 'Bearer ')",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 builder.Services.Configure<AppUrls>(builder.Configuration.GetSection("AppUrls")); /// url of frontend
 ExcelPackage.License.SetNonCommercialPersonal("ecomercebe");
 var app = builder.Build();

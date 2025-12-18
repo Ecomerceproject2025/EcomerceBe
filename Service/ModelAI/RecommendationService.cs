@@ -83,7 +83,8 @@ namespace EcomerceBE.Service.ModelAI
 
             if (!productExists)
             {
-                throw new KeyNotFoundException($"Product {productId} not found");
+                _logger.LogWarning($"Product {productId} not found or not active");
+                return new List<RecommendationResponse>();
             }
 
             // 2. Lấy embedding của sản phẩm hiện tại
@@ -92,7 +93,8 @@ namespace EcomerceBE.Service.ModelAI
 
             if (currentProductEmbedding == null)
             {
-                throw new KeyNotFoundException($"Product embedding not found for product {productId}. Please generate embedding first.");
+                _logger.LogWarning($"Product embedding not found for product {productId}");
+                return new List<RecommendationResponse>();
             }
 
             var currentVector = ParseEmbeddingVector(currentProductEmbedding.EmbeddingVector);
