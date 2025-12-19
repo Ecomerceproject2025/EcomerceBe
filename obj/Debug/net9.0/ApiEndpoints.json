@@ -1121,6 +1121,96 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "GetCustomerLocations",
+    "RelativePath": "api/orders/customer-locations",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "top",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.OrderController",
+    "Method": "GetCustomerRegions",
+    "RelativePath": "api/orders/customer-regions",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "level",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "top",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.MoMoPaymentController",
+    "Method": "CreatePayment",
+    "RelativePath": "api/payment/momo/create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "request",
+        "Type": "EcomerceBE.Controllers.MoMoPaymentController\u002BCreateMoMoPaymentRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.MoMoPaymentController",
+    "Method": "PaymentNotify",
+    "RelativePath": "api/payment/momo/notify",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "callbackData",
+        "Type": "EcomerceBE.Service.Payment.MoMoCallbackData",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.MoMoPaymentController",
+    "Method": "PaymentReturn",
+    "RelativePath": "api/payment/momo/return",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "orderId",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "resultCode",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=9.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "EcomerceBE.Controllers.ProductController",
     "Method": "AddProduct",
     "RelativePath": "api/Product/add_product",
@@ -1263,6 +1353,27 @@
         "Name": "page",
         "Type": "System.Int32",
         "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EcomerceBE.Controllers.ProductViewController",
+    "Method": "GetRelatedProducts",
+    "RelativePath": "api/ProductView/GetRelatedProducts/{productId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "productId",
+        "Type": "System.Int32",
+        "IsRequired": true
       },
       {
         "Name": "limit",

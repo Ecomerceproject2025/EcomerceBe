@@ -1,6 +1,9 @@
 ﻿using EcomerceBE.Data;
+using EcomerceBE.Service.ModelAI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading;
 using static EcomerceBE.Controllers.ProductViewController;
 
 namespace EcomerceBE.Controllers
@@ -13,10 +16,12 @@ namespace EcomerceBE.Controllers
 
 
         private readonly AppDbContext _context;
+        private readonly IRecommendationService _recommendationService;
 
-        public ProductViewController(AppDbContext context)
+        public ProductViewController(AppDbContext context, IRecommendationService recommendationService)
         {
             _context = context;
+            _recommendationService = recommendationService;
         }
 
 
@@ -290,15 +295,72 @@ namespace EcomerceBE.Controllers
                         StarRatingrating = p.StarRating > 0 
                             ? p.StarRating 
                             : (p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0),
-                        ReviewCounts = p.Reviews.Count,
-                        totalquantity = p.StockQuantity
+                        ReviewCounts = p.Reviews.Count(),
+                        totalquantity = p.StockQuantity ?? 0
                     })
                     .ToListAsync();
 
+                var count = relatedProducts.Count;
+                
+                // 3. Lấy AI recommendations (content-based) - optimized batch query with timeout
+                // Note: Related products are returned immediately, recommendations are optional
+                var recommendations = new List<ExploreProductDto>();
+                try
+                {
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2)); // 2 second timeout
+                    var aiRecommendations = await _recommendationService
+                        .GetContentBasedRecommendationsAsync(productId, limit)
+                        .WaitAsync(cts.Token);
+                    
+                    if (aiRecommendations.Any())
+                    {
+                        // Get all product IDs from recommendations
+                        var recommendationProductIds = aiRecommendations
+                            .Select(r => r.ProductId)
+                            .ToList();
+                        
+                        // Query all products in one batch
+                        var recommendationProducts = await _context.Products
+                            .AsNoTracking()
+                            .Where(p => recommendationProductIds.Contains(p.ProductId) && p.IsActive)
+                            .Select(p => new ExploreProductDto
+                            {
+                                Id = p.ProductId,
+                                Name = p.Name,
+                                image = p.Images.Select(img => img.ImageUrl).ToList(),
+                                Price = p.Price,
+                                Description = p.Description ?? "",
+                                StarRatingrating = p.StarRating > 0 
+                                    ? p.StarRating 
+                                    : (p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0),
+                                ReviewCounts = p.Reviews.Count(),
+                                totalquantity = p.StockQuantity ?? 0
+                            })
+                            .ToListAsync();
+                        
+                        // Maintain order from AI recommendations
+                        var recommendationDict = recommendationProducts.ToDictionary(p => p.Id);
+                        recommendations = aiRecommendations
+                            .Where(rec => recommendationDict.ContainsKey(rec.ProductId))
+                            .Select(rec => recommendationDict[rec.ProductId])
+                            .ToList();
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Timeout - silently ignore, return related products anyway
+                }
+                catch
+                {
+                    // Any other error - silently ignore, return related products anyway
+                }
+                
                 return Ok(new 
                 { 
                     data = relatedProducts, 
-                    totalCount = relatedProducts.Count 
+                    recommendations = recommendations,
+                    totalCount = count,
+                    recommendationsCount = recommendations.Count
                 });
             }
             catch (Exception ex)

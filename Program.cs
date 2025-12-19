@@ -65,6 +65,9 @@ builder.Services.AddHttpClient(); // For EmbeddingService to call AI Model API
 builder.Services.AddScoped<IEmbeddingService, EmbeddingService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
+// ✅ Payment Services
+builder.Services.AddScoped<EcomerceBE.Service.Payment.IMoMoPaymentService, EcomerceBE.Service.Payment.MoMoPaymentService>();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

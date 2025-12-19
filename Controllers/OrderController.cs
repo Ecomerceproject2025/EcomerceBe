@@ -40,6 +40,155 @@ namespace EcomerceBE.Controllers
             return secret;
         }
 
+        // GET /api/orders/customer-locations?top=6
+        // Thống kê vị trí khách hàng theo quốc gia dựa trên địa chỉ trong đơn hàng
+        [HttpGet("customer-locations")]
+        public async Task<IActionResult> GetCustomerLocations([FromQuery] int top = 6)
+        {
+            if (top < 1) top = 6;
+            // Lấy các đơn hàng có địa chỉ gắn kèm
+            var query = _context.Orders
+                .Include(o => o.Address)
+                .AsNoTracking()
+                .Where(o => o.Address != null);
+
+            var totalCustomers = await query
+                .Select(o => new { o.UserId, Country = o.Address.Country })
+                .Distinct()
+                .CountAsync();
+
+            if (totalCustomers == 0)
+            {
+                return Ok(new
+                {
+                    data = Array.Empty<object>(),
+                    total = 0
+                });
+            }
+
+            // Nhóm theo country
+            var grouped = await query
+                .Select(o => new { o.UserId, Country = o.Address.Country })
+                .Distinct() // mỗi user-country 1 lần
+                .GroupBy(x => x.Country)
+                .Select(g => new
+                {
+                    Country = g.Key,
+                    CustomerCount = g.Count()
+                })
+                .OrderByDescending(x => x.CustomerCount)
+                .ToListAsync();
+
+            // Map country -> lat/lng & code (demo mapping đơn giản)
+            var countryMap = new Dictionary<string, (string Code, double Lat, double Lng)>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "usa", ("US", 37.2580397, -104.657039) },
+                { "united states", ("US", 37.2580397, -104.657039) },
+                { "us", ("US", 37.2580397, -104.657039) },
+                { "france", ("FR", 46.2276, 2.2137) },
+                { "pháp", ("FR", 46.2276, 2.2137) },
+                { "vietnam", ("VN", 14.0583, 108.2772) },
+                { "việt nam", ("VN", 14.0583, 108.2772) },
+                { "india", ("IN", 20.7504374, 73.7276105) },
+                { "australia", ("AU", -25.2744, 133.7751) },
+            };
+
+            var results = grouped.Take(top).Select(g =>
+            {
+                var key = g.Country?.Trim() ?? "";
+                var lookupKey = key.ToLowerInvariant();
+
+                countryMap.TryGetValue(lookupKey, out var info);
+
+                var percentage = Math.Round((double)g.CustomerCount / totalCustomers * 100, 1);
+
+                return new
+                {
+                    countryCode = string.IsNullOrEmpty(info.Code) ? lookupKey.ToUpperInvariant() : info.Code,
+                    countryName = string.IsNullOrWhiteSpace(key) ? "Unknown" : key,
+                    customerCount = g.CustomerCount,
+                    percentage,
+                    latitude = info.Lat,
+                    longitude = info.Lng
+                };
+            }).ToList();
+
+            return Ok(new
+            {
+                data = results,
+                total = totalCustomers
+            });
+        }
+
+        // GET /api/orders/customer-regions?level=province|city&top=6
+        // Thống kê chi tiết theo Tỉnh/Thành phố hoặc Thành phố (city)
+        [HttpGet("customer-regions")]
+        public async Task<IActionResult> GetCustomerRegions([FromQuery] string level = "province", [FromQuery] int top = 6)
+        {
+            level = (level ?? "province").Trim().ToLowerInvariant();
+            var isCity = level == "city";
+            if (top < 1) top = 6;
+
+            var query = _context.Orders
+                .Include(o => o.Address)
+                .AsNoTracking()
+                .Where(o => o.Address != null);
+
+            var totalCustomers = await query
+                .Select(o => new
+                {
+                    o.UserId,
+                    Region = isCity ? o.Address.City : o.Address.Province
+                })
+                .Distinct()
+                .CountAsync();
+
+            if (totalCustomers == 0)
+            {
+                return Ok(new
+                {
+                    data = Array.Empty<object>(),
+                    total = 0
+                });
+            }
+
+            var grouped = await query
+                .Select(o => new
+                {
+                    o.UserId,
+                    Region = isCity ? o.Address.City : o.Address.Province
+                })
+                .Distinct()
+                .GroupBy(x => x.Region)
+                .Select(g => new
+                {
+                    Region = g.Key,
+                    CustomerCount = g.Count()
+                })
+                .OrderByDescending(x => x.CustomerCount)
+                .ToListAsync();
+
+            var results = grouped.Take(top).Select(g =>
+            {
+                var name = g.Region?.Trim();
+                var percentage = Math.Round((double)g.CustomerCount / totalCustomers * 100, 1);
+
+                return new
+                {
+                    name = string.IsNullOrWhiteSpace(name) ? "Unknown" : name,
+                    customerCount = g.CustomerCount,
+                    percentage
+                };
+            }).ToList();
+
+            return Ok(new
+            {
+                data = results,
+                total = totalCustomers,
+                level = isCity ? "city" : "province"
+            });
+        }
+
         private string ComputeDeliveryToken(int orderId, DateTime createdAtUtc)
         {
             var secret = GetDeliverySecret();
