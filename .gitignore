@@ -11,6 +11,10 @@ appsettings.*.json
 !appsettings.example.json
 !appsettings.template.json
 
+# Admin seed data (contains sensitive credentials)
+**/seedadmin.txt
+Data/seedadmin.txt
+
 # User secrets (ASP.NET Core User Secrets)
 **/secrets.json
 
@@ -162,11 +166,17 @@ venv/
 ENV/
 env/
 .virtualenv/
+**/site-packages/
+**/__pycache__/
 
 # Python compiled files
 *.py[cod]
 *$py.class
 __pycache__/
+*.so
+*.pyd
+*.pyo
+*.pyd
 
 # Distribution / packaging
 .Python
@@ -188,6 +198,12 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.whl
+
+# Installed packages (site-packages)
+**/site-packages/
+**/Lib/site-packages/
+**/lib/python*/site-packages/
 
 # PyInstaller
 *.manifest
@@ -239,6 +255,37 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Python package caches
+.pip/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Python linters and formatters
+.ruff_cache/
+.flake8
+.pylint.d/
+*.pylint.d/
+
+# Python type stubs
+*.pyi.stub
+*.stub
+
+# Python model files (if using ML models)
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.joblib
+*.model
+*.pt
+*.pth
+*.onnx
+*.pb
+
+# Jupyter Notebook checkpoints (already covered but ensuring)
+.ipynb_checkpoints/
+*.ipynb_checkpoints
 
 # ========================
 # Additional Security Files

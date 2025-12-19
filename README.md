@@ -182,8 +182,14 @@ Hệ thống flash sale với tự động cleanup và quản lý inventory.
 ### 9. [Email Service](./README_EMAIL_SERVICE.md)
 Cấu hình và sử dụng email service để gửi notifications.
 
-### 10. [AI/Recommendations](./ModelAI/README_BACKEND.md)
-Hệ thống AI recommendations với content-based và user-based filtering.
+### 10. [AI Setup & Usage](./README_AI_SETUP.md)
+Hướng dẫn cài đặt và sử dụng AI trong project, bao gồm setup Python service, generate embeddings, và test recommendations.
+
+### 11. [Seed Admin Users](./README_SEED_ADMIN.md)
+Hướng dẫn seed admin users, tạo admin mới, và best practices về bảo mật.
+
+### 12. [AI/Recommendations - Backend Details](./ModelAI/README_BACKEND.md)
+Chi tiết kỹ thuật về hệ thống AI recommendations với content-based và user-based filtering.
 
 ## 🔐 Authentication Flow
 
@@ -227,9 +233,7 @@ dotnet ef migrations remove
 
 Admin users được tự động seed khi ứng dụng khởi động (xem `AppDbContext.SeedAdminUsers()`).
 
-Default admin accounts:
-- Email: `Hungv5996@gmail.com` / Password: `admin@1234`
-- Email: `thaithanhphat323@gmail.com` / Password: `admin@1234`
+**⚠️ Lưu ý**: Default admin credentials không được công khai trong repository. Xem [README_SEED_ADMIN.md](./README_SEED_ADMIN.md) để biết cách tạo admin user mới.
 
 ### Testing với Swagger
 
@@ -289,5 +293,5 @@ Xem [LICENSE](../LICENSE) file.
 
 ---
 
-**Last Updated**: 2024-12-17
+**Last Updated**: 2025-12-17
 
